@@ -1,0 +1,40 @@
+WSL install
+https://docs.microsoft.com/en-us/windows/wsl/setup/environment
+https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl
+
+Nvm
+add this to zshrc 
+   source ~/.nvm/nvm.sh
+Node
+Npm
+cargo
+g++
+ripgrep
+pip
+pynvim
+debugpy
+zsh
+tmux
+Pull the zsh configs from chris website
+  zsh
+   Remove all setxkbmap, xset, fnm, zoxide
+  alacritty
+commend out all the git prompt stuff
+install nerd fonts
+install docker, kubernetes, helm
+tree
+unzip
+
+Windows install
+winget install Alacritty.Alacritty
+winget install "Windows Terminal"
+Language servers
+  npm install -g typescript typescript-language-server
+  npm i -g vscode-langservers-extracted
+  npm i -g pyright
+
+General notes
+Note so %
+copy and middle button to paste
+use :noau checkhealth
+

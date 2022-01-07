@@ -1,0 +1,29 @@
+Sell stuff
+  Marketplace blender
+    Blender 50 on sale
+    Speakers 50
+    Kettlebells
+      15, 20, 25
+    Rug 30
+    Shovel
+    Nespresso 50
+    Seatcover 10 on sale
+    Ironing Board 5 on sale
+
+  Ebay Books
+    Bruhn on sale
+    Niu on sale
+    Nuclear Engineering
+    Machanics handbook
+
+Donate stuff
+  Books
+  Stuff from storage
+
+Get shipping cost
+  wepackuship - 1877 for 80 cubic feet
+  sevenseasworld - 1580 for 10 standard boxes
+
+Set up Git for SSH
+Call up total access regarding dependent care account
+Sort through storage of stuff to donate/ship
