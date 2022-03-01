@@ -58,30 +58,27 @@ colors:
     text: "#3B4252"
     cursor: "#ECEFF4"
 
-cursor:
-  style:
-    blinking: Never
 
 font:
   # The normal (roman) font face to use.
   normal:
-    family: monospace
+    family: Hack NF
     # Style can be specified to pick a specific face.
     style: Regular
 
   # The bold font face
   bold:
-    family: monospace
+    family: Hack NF
     # Style can be specified to pick a specific face.
     style: Bold
 
   # The italic font face
   italic:
-    family: monospace
+    family: Hack NF
     # Style can be specified to pick a specific face.
     style: Italic
 
-  size: 13.0
+  size: 22
 
   ligatures: true
 
@@ -95,6 +92,7 @@ window:
   padding:
     x: 2
     y: 2
+  opacity: 0.4
   # scrolling:
   #   # Maximum number of lines in the scrollback buffer.
   #   # Specifying '0' will disable scrolling.
