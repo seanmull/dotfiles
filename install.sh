@@ -18,6 +18,7 @@ sudo apt install silversearcher-ag
 sudo apt install fd-find
 sudo apt-get install zsh
 sudo apt install tmux
+#TODO get v0.6 since that works better with lvim
 sudo add-apt-repository ppa:neovim-ppa/unstable
 sudo apt-get update
 sudo apt install neovim
