@@ -51,6 +51,16 @@ lvim.builtin.which_key.mappings["t"] = {
   f = { "<cmd>TestFile -v<cr>", "TestFile" },
   n = { "<cmd>TestNearest -v<cr>", "TestNearest" },
 }
+lvim.builtin.which_key.mappings["d"] = {
+  name = "+Debug",
+  b = { "<cmd>call vimspector#ToggleBreakpoint()<cr>", "Toggle Breakpoint" },
+  c = { "<cmd>call vimspector#RunToCursor()<cr>", "Run to cursor" },
+  l = { "<cmd>call vimspector#Launch()<cr>", "Launch" },
+  i = { "<cmd>call vimspector#StepInto()<cr>", "Step Into" },
+  o = { "<cmd>call vimspector#StepOver()<cr>", "Step Over" },
+  r = { "<cmd>call vimspector#Reset()<cr>", "Reset" }
+
+}
 
 -- TODO: User Config for predefined plugins
 -- After changing plugin config exit and reopen LunarVim, Run :PackerInstall :PackerCompile
@@ -59,8 +69,10 @@ lvim.builtin.notify.active = true
 lvim.builtin.terminal.active = true
 lvim.builtin.nvimtree.setup.view.side = "left"
 lvim.builtin.nvimtree.show_icons.git = 0
-vim.api.nvim_exec("let test#python#runner = 'pytest'", true)
 -- Runners available are 'pytest', 'nose', 'nose2', 'djangotest', 'djangonose', 'mamba', and Python's built-in unittest as 'pyunit'
+vim.api.nvim_exec("let test#python#runner = 'pytest'", true)
+-- TODO: Cannot get vimspector to see this directory
+vim.api.nvim_exec("let g:vimspector_base_dir = expand('$HOME/dotfiles')", true)
 
 -- if you don't want all the parsers change this to a table of the ones you want
 lvim.builtin.treesitter.ensure_installed = {
