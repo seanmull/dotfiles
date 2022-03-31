@@ -61,6 +61,7 @@ alias dcd="docker-compose down"
 alias sctl="systemctl"
 alias jctl="journalctl"
 alias find_services="systemctl list-units --type=service"
+alias python=/usr/bin/python3.10
 
 case "$(uname -s)" in
 
