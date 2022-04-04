@@ -1,8 +1,16 @@
-backup:
-	sudo mkdir -p /var/local/projects/backups
-	sudo chmod +rwx /var/local/projects/backups
-	sudo rsync -aruv ~/projects /var/local/projects/backups
-
+install:
+	./install.sh
 
 restore:
-	rsync -aruv var/local/Projects/backups/* ~/projects 
+	./recover.sh
+
+config:
+	cd ~
+	git clone git@github.com:seanmull/dotfiles.git
+	cd ~/dotfiles
+	stow zsh
+	stow lvim
+	stow alacritty
+	stow .tmux.conf
+
+
