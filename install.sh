@@ -17,6 +17,7 @@ sudo apt install python3-pip
 pip install pyvim
 sudo apt-get install python2.7
 sudo apt-get install python3.10
+sudo pip3 install ueberzug
 
 # Package managers
 sudo apt-get install curl
@@ -42,6 +43,7 @@ LV_BRANCH=rolling bash <(curl -s https://raw.githubusercontent.com/lunarvim/luna
 # Utilities
 apt-get install x11-xkb-utils
 apt-get install x11-xserver-utils
+sudo apt-get install libxext-dev
 curl -fsSL https://fnm.vercel.app/install | bash
 curl -sS https://webinstall.dev/zoxide | bash
 sudo apt install alacritty

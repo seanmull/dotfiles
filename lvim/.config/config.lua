@@ -164,7 +164,9 @@ lvim.plugins = {
   {'tyru/open-browser.vim'},
   {'kdheepak/lazygit.nvim'},
   {'tpope/vim-fugitive'},
-  {'puremourning/vimspector'}
+  {'puremourning/vimspector'},
+  {'nvim-telescope/telescope-media-files.nvim'}
+
 }
 require('telescope').load_extension('bookmarks')
 require('telescope').setup {
@@ -179,6 +181,17 @@ require('telescope').setup {
   }
 }
 require('telescope').load_extension('lazygit')
+require('telescope').load_extension('media_files')
+require('telescope').setup {
+  extensions = {
+    media_files = {
+      -- filetypes whitelist
+      -- defaults to {"png", "jpg", "mp4", "webm", "pdf"}
+      filetypes = {"png", "webp", "jpg", "jpeg"},
+      find_cmd = "rg" -- find command (defaults to `fd`)
+    }
+  },
+}
 -- Autocommands (https://neovim.io/doc/user/autocmd.html)
 -- lvim.autocommands.custom_groups = {
 --   { "BufWinEnter", "*.lua", "setlocal ts=8 sw=8" }
