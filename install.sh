@@ -27,6 +27,7 @@ sudo apt install snap
 # Neovim
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 nvm install node
+npm i -g eslint prettier
 sudo apt install cargo
 sudo apt install g++
 cargo install ripgrep
