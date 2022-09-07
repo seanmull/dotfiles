@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Add additional repositories
-sudo add-apt-repository ppa:neovim-ppa/stable
+sudo add-apt-repository ppa:neovim-ppa/unstable
 sudo add-apt-repository ppa:deadsnakes/ppa
 echo "deb [trusted=yes arch=amd64] https://download.konghq.com/insomnia-ubuntu/ default all" \
     | sudo tee -a /etc/apt/sources.list.d/insomnia.list
@@ -61,11 +61,6 @@ sudo snap install --classic code
 sudo apt-get install stow
 
 # Themes
-sudo apt install gnome-tweak-tool
-mkdir ~/Themes && cd ~/Themes
-git clone git@github.com:vinceliuice/Orchis-theme.git
-chmod +x install.sh
-./install.sh
 
 # Install docker
 sudo apt-get remove docker docker-engine docker.io containerd runc

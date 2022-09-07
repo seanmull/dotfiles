@@ -64,7 +64,7 @@ lvim.builtin.which_key.mappings["d"] = {
 
 -- TODO: User Config for predefined plugins
 -- After changing plugin config exit and reopen LunarVim, Run :PackerInstall :PackerCompile
-lvim.builtin.dashboard.active = true
+lvim.builtin.alpha.active = true
 lvim.builtin.notify.active = true
 lvim.builtin.terminal.active = true
 lvim.builtin.nvimtree.setup.view.side = "left"
@@ -127,7 +127,6 @@ formatters.setup {
     -- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
     extra_args = { "--print-with", "100" },
     ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
-    filetypes = { "javascript","typescript", "typescriptreact" },
   },
 }
 
@@ -135,7 +134,7 @@ formatters.setup {
 local linters = require "lvim.lsp.null-ls.linters"
 linters.setup {
   { command = "flake8", filetypes = { "python" } },
-  { command = "eslint", filetypes = { "javascript", "typescript" } },
+  -- { command = "eslint" },
   {
     -- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
     command = "shellcheck",
@@ -144,29 +143,28 @@ linters.setup {
     extra_args = { "--severity", "warning" },
   },
   {
-    command = "codespell",
+    command = "codespell"
     ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
-    filetypes = { "javascript", "python" },
   },
 }
 
 -- Additional Plugins
 lvim.plugins = {
-    {"folke/tokyonight.nvim"},
-    {
-      "folke/trouble.nvim",
-      cmd = "TroubleToggle",
-    },
-  {"ggandor/lightspeed.nvim"},
-  {"metakirby5/codi.vim"},
-  { "rcarriga/vim-ultest", requires = {"vim-test/vim-test"}, run = ":UpdateRemotePlugins" },
+  { "folke/tokyonight.nvim" },
+  {
+    "folke/trouble.nvim",
+    cmd = "TroubleToggle",
+  },
+  { "ggandor/lightspeed.nvim" },
+  { "metakirby5/codi.vim" },
+  { "rcarriga/vim-ultest", requires = { "vim-test/vim-test" }, run = ":UpdateRemotePlugins" },
   -- change defaults on bookmarks.lua to chrome and open_browser
-  {'dhruvmanila/telescope-bookmarks.nvim'},
-  {'tyru/open-browser.vim'},
-  {'kdheepak/lazygit.nvim'},
-  {'tpope/vim-fugitive'},
-  {'puremourning/vimspector'},
-  {'nvim-telescope/telescope-media-files.nvim'}
+  { 'dhruvmanila/telescope-bookmarks.nvim' },
+  { 'tyru/open-browser.vim' },
+  { 'kdheepak/lazygit.nvim' },
+  { 'tpope/vim-fugitive' },
+  { 'puremourning/vimspector' },
+  { 'nvim-telescope/telescope-media-files.nvim' }
 
 }
 require('telescope').load_extension('bookmarks')
@@ -188,7 +186,7 @@ require('telescope').setup {
     media_files = {
       -- filetypes whitelist
       -- defaults to {"png", "jpg", "mp4", "webm", "pdf"}
-      filetypes = {"png", "webp", "jpg", "jpeg"},
+      filetypes = { "png", "webp", "jpg", "jpeg" },
       find_cmd = "rg" -- find command (defaults to `fd`)
     }
   },

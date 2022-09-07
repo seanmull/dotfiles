@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "codespell": "1.1.7",
+    "prettier": "2.7.1",
+    "shellcheck": "1.1.0"
+  },
+  "dependencies": {
+    "neovim": "^4.10.1"
+  }
+}
