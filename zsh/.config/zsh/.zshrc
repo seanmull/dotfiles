@@ -84,7 +84,7 @@ xset r rate 210 40
 # xset r rate 210 40
 
 # Environment variables set everywhere
-export EDITOR="nvim"
+export EDITOR="lvim"
 export TERMINAL="alacritty"
 export BROWSER="brave"
 

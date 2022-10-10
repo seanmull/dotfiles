@@ -11,7 +11,8 @@ export GOPATH=$HOME/.local/share/go
 export PATH=$HOME/.fnm:$PATH
 eval "`pip completion --zsh`"
 export PYTHONSTARTUP=~/.pythonrc
-
+export DENO_INSTALL="/home/seanm@NIGHTLIFE.COM.AU/.deno"
+export PATH="$DENO_INSTALL/bin:$PATH"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!

@@ -1,6 +1,5 @@
 --[[
 lvim is the global options object
-
 Linters should be
 filled in as strings with either
 a global executable or a path to
@@ -10,7 +9,7 @@ an executable
 
 -- general
 lvim.log.level = "warn"
-lvim.format_on_save = true
+lvim.format_on_save = false
 lvim.colorscheme = "onedarker"
 lvim.lsp.diagnostics.virtual_text = false
 lvim.builtin.dap.active = true
@@ -23,6 +22,7 @@ vim.opt.relativenumber = true
 -- for being able to use gx to look at urls
 vim.api.nvim_exec("nnoremap gx :!xdg-open <cWORD> &<CR><CR>", true)
 
+vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %<CR>", true)
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
 -- add your own keymapping
@@ -118,6 +118,8 @@ lvim.builtin.treesitter.ensure_installed = {
 	"rust",
 	"java",
 	"yaml",
+	"sql",
+	"markdown",
 }
 
 lvim.builtin.treesitter.ignore_install = { "haskell" }
@@ -161,8 +163,7 @@ lvim.builtin.treesitter.highlight.enabled = true
 --     vim.api.nvim_buf_set_option(bufnr, ...)
 --   end
 --   --Enable completion triggered by <c-x><c-o>
---   buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc")
--- end
+--   buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc") end
 
 -- -- set a formatter, this will override the language server formatting capabilities (if it exists)
 local formatters = require("lvim.lsp.null-ls.formatters")
@@ -174,38 +175,48 @@ formatters.setup({
 		filetypes = { "lua" },
 	},
 	{
+		command = "shfmt",
+		filetypes = { "bash" },
+	},
+	{
 		-- each formatter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
 		command = "prettier",
 		---@usage arguments to pass to the formatter
 		-- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
 		extra_args = { "--print-with", "100", "--tab-width", "4" },
 		---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
-		-- filetypes = { "typescript", "typescriptreact" },
+		filetypes = { "typescript", "typescriptreact", "javascript", "markdown", "json", "vimwiki" },
 	},
 })
 
 -- -- set additional linters
 local linters = require("lvim.lsp.null-ls.linters")
 linters.setup({
+	-- { command = "vale", filetypes = { "markdown" } },
 	--   { command = "flake8", filetypes = { "python" } },
 	-- { command = "eslint" },
-	-- {
-	--   -- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
-	--   command = "shellcheck",
-	--   ---@usage arguments to pass to the formatter
-	--   -- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
-	--   extra_args = { "--severity", "warning" },
-	--   filetypes = { "javascript", "typescript" }
-	-- },
+	{
+		-- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
+		command = "shellcheck",
+		---@usage arguments to pass to the formatter
+		-- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
+		-- extra_args = { "--severity", "warning" },
+		-- filetypes = { "bash"  }
+	},
 	{
 		command = "codespell",
 		---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
-		filetypes = { "javascript", "python", "typescript" },
+		filetypes = { "javascript", "python", "typescript", "bash", "lua" },
 	},
 })
 
 -- Additional Plugins
 lvim.plugins = {
+	{ "z0mbix/vim-shfmt" },
+	-- { "vim-denops/denops.vim" },
+	{ "tpope/vim-dadbod" },
+	-- { "vim-denops/denops-helloworld.vim" },
+	-- { "skanehira/k8s.vim" },
 	{ "ckipp01/stylua-nvim", run = "cargo install stylua" },
 	{
 		"olivercederborg/poimandres.nvim",
@@ -356,10 +367,10 @@ lvim.keys.normal_mode["<leader>U"] = ":lua require('dapui').toggle()<CR>"
 --   -- enable wrap mode for json files only
 --   command = "setlocal wrap",
 -- })
--- vim.api.nvim_create_autocmd("FileType", {
---   pattern = "zsh",
---   callback = function()
---     -- let treesitter use bash highlight for zsh files as well
---     require("nvim-treesitter.highlight").attach(0, "bash")
---   end,
--- })
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "zsh",
+	callback = function()
+		-- let treesitter use bash highlight for zsh files as well
+		require("nvim-treesitter.highlight").attach(0, "bash")
+	end,
+})
