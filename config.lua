@@ -22,7 +22,7 @@ vim.opt.relativenumber = true
 -- for being able to use gx to look at urls
 vim.api.nvim_exec("nnoremap gx :!xdg-open <cWORD> &<CR><CR>", true)
 
-vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %<CR>", true)
+-- vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %<CR>", true)
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
 -- add your own keymapping
@@ -212,6 +212,8 @@ linters.setup({
 
 -- Additional Plugins
 lvim.plugins = {
+	{ "kristijanhusak/vim-dadbod-ui" },
+	-- { "David-Kunz/markid" },
 	{ "z0mbix/vim-shfmt" },
 	-- { "vim-denops/denops.vim" },
 	{ "tpope/vim-dadbod" },
@@ -257,7 +259,12 @@ lvim.plugins = {
 }
 
 -- vim.api.nvim_exec("let g:hardtime_default_on = 1", true)
-
+-- require("nvim-treesitter.configs").setup({
+-- 	markid = { 
+--         enable = true ,
+--         colors = require("markid").colors.medium,
+--     },
+-- })
 require("telescope").load_extension("bookmarks")
 require("telescope").setup({
 	extensions = {
