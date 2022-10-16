@@ -6,6 +6,7 @@ export PATH="$HOME/.local/bin":$PATH
 export MANPAGER='nvim +Man!'
 export MANWIDTH=999
 export PATH=$HOME/.cargo/bin:$PATH
+export PATH=$HOME/projects/scripts:$PATH
 export PATH=$HOME/.local/share/go/bin:$PATH
 export GOPATH=$HOME/.local/share/go
 export PATH=$HOME/.fnm:$PATH
@@ -13,6 +14,7 @@ eval "`pip completion --zsh`"
 export PYTHONSTARTUP=~/.pythonrc
 export DENO_INSTALL="/home/seanm@NIGHTLIFE.COM.AU/.deno"
 export PATH="$DENO_INSTALL/bin:$PATH"
+export MONO_PATH="/home/seanm@NIGHTLIFE.COM.AU/projects/mono"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!

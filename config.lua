@@ -22,7 +22,7 @@ vim.opt.relativenumber = true
 -- for being able to use gx to look at urls
 vim.api.nvim_exec("nnoremap gx :!xdg-open <cWORD> &<CR><CR>", true)
 
--- vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %<CR>", true)
+vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %", true)
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
 -- add your own keymapping
@@ -323,7 +323,7 @@ dap.adapters.typescript = {
 	command = "/usr/bin/node",
 	args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
 }
-require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2" } })
+require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2", "node" } })
 
 -- dap.configurations.javascript = {
 --   {
