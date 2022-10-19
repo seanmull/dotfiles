@@ -32,8 +32,8 @@ lvim.keys.normal_mode["<C-s>"] = ":w<cr>"
 -- override a default keymapping
 -- lvim.keys.normal_mode["<C-q>"] = ":q<cr>" -- or vim.keymap.set("n", "<C-q>", ":q<cr>" )
 lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
-lvim.builtin.which_key.mappings["L"] = { "<cmd>LazyGit<CR>", "LazyGit" }
-lvim.builtin.which_key.mappings["B"] = { "<cmd>Telescope bookmarks<CR>", "Browser" }
+lvim.builtin.which_key.mappings["Z"] = { "<cmd>LazyGit<CR>", "LazyGit" }
+-- lvim.builtin.which_key.mappings["B"] = { "<cmd>Telescope bookmarks<CR>", "Browser" }
 lvim.builtin.which_key.mappings["t"] = {
 	name = "+Test",
 	f = { "<cmd>TestFile -v<cr>", "TestFile" },
@@ -213,7 +213,7 @@ linters.setup({
 -- Additional Plugins
 lvim.plugins = {
 	{ "kristijanhusak/vim-dadbod-ui" },
-	-- { "David-Kunz/markid" },
+	{ "David-Kunz/markid" },
 	{ "z0mbix/vim-shfmt" },
 	-- { "vim-denops/denops.vim" },
 	{ "tpope/vim-dadbod" },
@@ -259,12 +259,12 @@ lvim.plugins = {
 }
 
 -- vim.api.nvim_exec("let g:hardtime_default_on = 1", true)
--- require("nvim-treesitter.configs").setup({
--- 	markid = { 
---         enable = true ,
---         colors = require("markid").colors.medium,
---     },
--- })
+require("nvim-treesitter.configs").setup({
+	markid = { 
+        enable = true ,
+        colors = require("markid").colors.bright,
+    },
+})
 require("telescope").load_extension("bookmarks")
 require("telescope").setup({
 	extensions = {
@@ -292,7 +292,7 @@ require("telescope").setup({
 
 require("telescope").load_extension("dap")
 lvim.keys.normal_mode["<leader>F"] = ":Telescope dap frames<CR>"
-lvim.keys.normal_mode["<leader>S"] = ":Telescope dap so<CR>"
+-- lvim.keys.normal_mode["<leader>S"] = ":Telescope dap so<CR>"
 lvim.keys.normal_mode["<leader>dU"] = "<cmd>lua require'dap'.up()<cr>"
 lvim.keys.normal_mode["<leader>dD"] = "<cmd>lua require'dap'.down()<cr>"
 
@@ -367,7 +367,7 @@ require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescrip
 --   },
 -- }
 -- require("dapui").setup()
-lvim.keys.normal_mode["<leader>U"] = ":lua require('dapui').toggle()<CR>"
+-- lvim.keys.normal_mode["<leader>U"] = ":lua require('dapui').toggle()<CR>"
 -- Autocommands (https://neovim.io/doc/user/autocmd.html)
 -- vim.api.nvim_create_autocmd("BufEnter", {
 --   pattern = { "*.json", "*.jsonc" },

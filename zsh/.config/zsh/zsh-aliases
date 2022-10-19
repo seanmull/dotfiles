@@ -1,29 +1,49 @@
 #!/bin/sh
 # alias j='z'
 # alias f='zi'
-alias lg='lazygit'
 alias zsh-update-plugins="find "$ZDOTDIR/plugins" -type d -exec test -e '{}/.git' ';' -print0 | xargs -I {} -0 git -C {} pull -q"
 alias nvimrc='nvim ~/.config/nvim/'
 
 # alias lvim='nvim -u ~/.local/share/lunarvim/lvim/init.lua --cmd "set runtimepath+=~/.local/share/lunarvim/lvim"'
-alias m="cd ~/projects/mono"
-alias k="kubectl"
-alias t="tmux"
-alias l="ls -a"
-alias tc="telepresence connect"
-alias n="node"
-alias login="aws --profile DeveloperRole-174155838907 sso login"
-alias kcc="kubectl config current-context"
-alias kl="kubectl logs"
+# Paths
+alias lv="cd $HOME/.local/share/lunarvim/lvim/lua/lvim"
+alias m="cd $HOME/projects/mono"
+alias z="cd $HOME/.config/zsh/"
+alias p= "$HOME/.local/share/lunarvim/site/pack/packer/start"
+
+# Git
+alias lg='lazygit'
 alias ga="git add ."
 alias gp="git pull"
 # alias gs="git status"
 alias gl="git log"
-alias c="clear"
-alias z="cd ~/.config/zsh/"
+
+# Cloud Stuff
+alias k="kubectl"
+alias tc="telepresence connect"
+alias login="aws --profile DeveloperRole-174155838907 sso login"
+alias kcc="kubectl config current-context"
+alias kl="kubectl logs"
+alias dcu="docker-compose up"
+alias dcd="docker-compose down"
+alias sctl="systemctl"
+alias jctl="journalctl"
+alias find_services="systemctl list-units --type=service"
+
+# Custom scripts
 alias nt="bash addTabInTmux.sh"
 alias ll="bash launchLogger.sh"
 alias gs="bash generateAndSchemify.sh"
+alias bd="bash buildAndDeploy.sh"
+alias env="bash createEnvFiles.sh"
+
+
+alias t="tmux"
+alias l="ls -a"
+alias n="node"
+alias c="clear"
+alias v="lvim"
+alias python=/usr/bin/python3.10
 
 
 # get fastest mirrors
@@ -73,14 +93,6 @@ alias gpg-retrieve="gpg2 --keyserver-options auto-key-retrieve --receive-keys"
 # alias m="git checkout master"
 # alias s="git checkout stable"
 
-alias v="lvim"
-alias dcu="docker-compose up"
-alias dcd="docker-compose down"
-
-alias sctl="systemctl"
-alias jctl="journalctl"
-alias find_services="systemctl list-units --type=service"
-alias python=/usr/bin/python3.10
 
 case "$(uname -s)" in
 
