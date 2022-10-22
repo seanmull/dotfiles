@@ -22,7 +22,13 @@ vim.opt.relativenumber = true
 -- for being able to use gx to look at urls
 vim.api.nvim_exec("nnoremap gx :!xdg-open <cWORD> &<CR><CR>", true)
 
-vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %", true)
+-- for quickly running scripts
+lvim.keys.normal_mode["sh"] = ":!chmod +x % && source %"
+lvim.keys.normal_mode["nd"] = ":!node %"
+lvim.keys.normal_mode["ts"] = ":!ts-node %"
+
+-- vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %", true)
+
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
 -- add your own keymapping

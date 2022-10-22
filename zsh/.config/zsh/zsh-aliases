@@ -9,7 +9,7 @@ alias nvimrc='nvim ~/.config/nvim/'
 alias lv="cd $HOME/.local/share/lunarvim/lvim/lua/lvim"
 alias m="cd $HOME/projects/mono"
 alias z="cd $HOME/.config/zsh/"
-alias p= "$HOME/.local/share/lunarvim/site/pack/packer/start"
+alias p="cd $HOME/.local/share/lunarvim/site/pack/packer/start"
 
 # Git
 alias lg='lazygit'
@@ -37,7 +37,7 @@ alias gs="bash generateAndSchemify.sh"
 alias bd="bash buildAndDeploy.sh"
 alias env="bash createEnvFiles.sh"
 
-
+# The basics
 alias t="tmux"
 alias l="ls -a"
 alias n="node"
