@@ -19,13 +19,20 @@ vim.opt.shiftwidth = 4
 -- lvim.use_icons = false
 vim.opt.relativenumber = true
 
--- for being able to use gx to look at urls
 vim.api.nvim_exec("nnoremap gx :!xdg-open <cWORD> &<CR><CR>", true)
 
--- for quickly running scripts
+
+
+-- for quickly running scripts use which_key
+-- lvim.builtin.which_key.mappings["x"] = {
+-- name = "+Execute",
+  -- s = { "<cmd>!chmod +x % && source %", "Toggle Breakpoint" },
+--   n = { "<cmd>call vimspector#RunToCursor()<cr>", "Run to cursor" },
+--   t = { "<cmd>call vimspector#Launch()<cr>", "Launch" },
+-- }
 lvim.keys.normal_mode["sh"] = ":!chmod +x % && source %"
-lvim.keys.normal_mode["nd"] = ":!node %"
-lvim.keys.normal_mode["ts"] = ":!ts-node %"
+-- lvim.keys.normal_mode["nd"] = ":!node %"
+-- lvim.keys.normal_mode["ts"] = ":!ts-node %"
 
 -- vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %", true)
 
@@ -38,6 +45,7 @@ lvim.keys.normal_mode["<C-s>"] = ":w<cr>"
 -- override a default keymapping
 -- lvim.keys.normal_mode["<C-q>"] = ":q<cr>" -- or vim.keymap.set("n", "<C-q>", ":q<cr>" )
 lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
+lvim.builtin.which_key.mappings["W"] = { "<cmd>VimwikiIndex<CR>", "Vimwiki" }
 lvim.builtin.which_key.mappings["Z"] = { "<cmd>LazyGit<CR>", "LazyGit" }
 -- lvim.builtin.which_key.mappings["B"] = { "<cmd>Telescope bookmarks<CR>", "Browser" }
 lvim.builtin.which_key.mappings["t"] = {

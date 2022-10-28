@@ -1,0 +1,13 @@
+services:
+  lunarvim:
+    image: lunarvim:latest
+    environment:
+      - "EXE_PATH=${EXE_PATH}"
+    volumes:
+      - "db:/root/.config/lvim"
+      - "config:/root/.local/share"
+      - "$EXE_PATH:/usr/src/lvim"
+
+volumes:
+  db:
+  config:
