@@ -36,5 +36,6 @@ RUN git clone https://github.com/microsoft/vscode-node-debug2.git /root/dev/micr
 WORKDIR /root/dev/microsoft/vscode-node-debug2
 RUN npm install 
 RUN npm run build
+RUN git config --global --add safe.directory "*"
 WORKDIR /usr/src/lvim
 ENTRYPOINT "lvim"
