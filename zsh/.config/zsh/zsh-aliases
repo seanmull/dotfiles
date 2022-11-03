@@ -10,6 +10,7 @@ alias lv="cd $HOME/.local/share/lunarvim/lvim/lua/lvim"
 alias m="cd $HOME/projects/mono"
 alias z="cd $HOME/.config/zsh/"
 alias p="cd $HOME/.local/share/lunarvim/site/pack/packer/start"
+alias d="cd /var/lib/docker/volumes/lunarvim-docker_config/_data"
 
 # Git
 alias lg='lazygit'
@@ -29,6 +30,7 @@ alias dcd="docker-compose down"
 alias sctl="systemctl"
 alias jctl="journalctl"
 alias find_services="systemctl list-units --type=service"
+alias bdl="docker build -t lunarvim:latest ."
 
 # Custom scripts
 alias nt="bash addTabInTmux.sh"

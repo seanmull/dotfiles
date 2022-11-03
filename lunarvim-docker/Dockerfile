@@ -5,18 +5,20 @@ RUN apt-get install -y nodejs
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /var/tmp/rust-install.sh && sh /var/tmp/rust-install.sh -y 
 RUN echo "source $HOME/.cargo/env" >> /root/.bashrc
 RUN ln -s /root/.cargo/bin/cargo /usr/local/bin/cargo
+RUN cargo install ripgrep 
 RUN cargo install fd-find
-RUN cargo install ripgrep
 RUN python3 -m pip install pynvim
 RUN npm i -g neovim 
 RUN npm i -g tree-sitter-cli --allow-root --unsafe-perm=true
 RUN cd /var/tmp && git clone https://github.com/neovim/neovim && cd neovim && git checkout nightly && make install
+# Need this stuff if want to run nightly
 RUN mkdir /installer
 COPY ./install.sh /installer/install.sh
 RUN chmod u+x /installer/install.sh 
 ENV PATH "$PATH:/root/.local/share/lvim"
 RUN mkdir /usr/share/desktop-directories/
 RUN ./installer/install.sh
+# RUN curl -s https://raw.githubusercontent.com/lunarvim/lunarvim/master/utils/installer/install.sh | bash
 RUN ln -s /root/.local/bin/lvim /usr/local/bin/lvim
 ENV PATH "$PATH:/root/.cargo/bin"
 RUN npm i -g prettier codespell shellcheck eslint --allow-root --unsafe-perm=true
