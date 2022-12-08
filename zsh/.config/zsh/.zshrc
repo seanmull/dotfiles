@@ -79,8 +79,8 @@ autoload edit-command-line; zle -N edit-command-line
 # bindkey '^e' edit-command-line
 
 # TODO Remove these
-setxkbmap -option caps:escape
-xset r rate 210 40
+# setxkbmap -option caps:escape
+# xset r rate 210 40
 
 # Speedy keys
 # xset r rate 210 40
@@ -88,7 +88,7 @@ xset r rate 210 40
 # Environment variables set everywhere
 export EDITOR="lvim"
 export TERMINAL="alacritty"
-export BROWSER="brave"
+export BROWSER="chrome"
 
 # For QT Themes
 export QT_QPA_PLATFORMTHEME=qt5ct
