@@ -22,7 +22,7 @@ alias gl="git log"
 # Cloud Stuff
 alias k="kubectl"
 alias tc="telepresence connect"
-alias login="aws --profile development sso login"
+alias login="export BROWSER=wslview && aws --profile development sso login"
 alias kcc="kubectl config current-context"
 alias kl="kubectl logs"
 alias dcu="docker-compose up"
