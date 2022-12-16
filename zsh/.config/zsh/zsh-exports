@@ -12,9 +12,9 @@ export GOPATH=$HOME/.local/share/go
 export PATH=$HOME/.fnm:$PATH
 eval "`pip completion --zsh`"
 export PYTHONSTARTUP=~/.pythonrc
-export DENO_INSTALL="/home/seanm@NIGHTLIFE.COM.AU/.deno"
-export PATH="$DENO_INSTALL/bin:$PATH"
-export MONO_PATH="/home/seanm@NIGHTLIFE.COM.AU/projects/mono"
+export DENO_INSTALL=$HOME/.deno
+export PATH=$DENO_INSTALL/bin:$PATH
+export MONO_PATH=$HOME/projects/mono
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
