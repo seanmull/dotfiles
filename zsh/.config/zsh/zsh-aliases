@@ -12,6 +12,9 @@ alias z="cd $HOME/.config/zsh/"
 alias p="cd $HOME/.local/share/lunarvim/site/pack/packer/start"
 alias d="cd /var/lib/docker/volumes/lunarvim-docker_config/_data"
 
+# some stuff to allow remote connections from hosts on the network
+alias startxrdp="sudo /etc/init.d/dbus start && sudo /etc/init.d/xrdp start"
+
 # Git
 alias lg='lazygit'
 alias ga="git add ."
@@ -23,6 +26,7 @@ alias gl="git log"
 alias k="kubectl"
 alias tc="telepresence connect"
 alias login="export BROWSER=wslview && aws --profile development sso login"
+alias login_prod="export BROWSER=wslview && aws --profile production sso login"
 alias kcc="kubectl config current-context"
 alias kl="kubectl logs"
 alias dcu="docker-compose up"
@@ -37,7 +41,7 @@ alias nt="bash addTabInTmux.sh"
 alias ll="bash launchLogger.sh"
 alias gs="bash generateAndSchemify.sh"
 alias bd="bash buildAndDeploy.sh"
-alias env="bash createEnvFiles.sh"
+alias envFile="bash createEnvFiles.sh"
 alias ld="bash launchDockerLvim.sh"
 
 # The basics

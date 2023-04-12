@@ -15,7 +15,8 @@ export PYTHONSTARTUP=~/.pythonrc
 export DENO_INSTALL=$HOME/.deno
 export PATH=$DENO_INSTALL/bin:$PATH
 export MONO_PATH=$HOME/projects/mono
-
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+export REMOTE_HOST='192.168.2.91'
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$("$HOME/.miniconda/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
