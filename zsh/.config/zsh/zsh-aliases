@@ -36,7 +36,7 @@ alias sctl="systemctl"
 alias jctl="journalctl"
 alias find_services="systemctl list-units --type=service"
 alias bdl="docker build -t lunarvim:latest ."
-alias login_bb="ssh seanm@192.168.2.99"
+alias login_bb="/mnt/c/Windows/System32/OpenSSH/ssh.exe wpc-0083u"
 
 # Custom scripts
 alias nt="bash addTabInTmux.sh"
