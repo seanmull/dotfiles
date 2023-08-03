@@ -32,7 +32,7 @@ RUN bash ~/.config/envman/PATH.env
 RUN go env -w GO111MODULE=off
 RUN curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_0.35_Linux_x86_64.tar.gz"
 RUN file lazygit.tar.gz
-RUN tar xf lazygit.tar.gz -C /usr/local/bin lazygit
+# RUN tar xf lazygit.tar.gz -C /usr/local/bin lazygit
 RUN mkdir -p /root/dev/microsoft
 RUN git clone https://github.com/microsoft/vscode-node-debug2.git /root/dev/microsoft/vscode-node-debug2
 WORKDIR /root/dev/microsoft/vscode-node-debug2
