@@ -7,7 +7,3 @@ services:
       - "db:/root/.config/lvim"
       - "config:/root/.local/share"
       - "$EXE_PATH:/usr/src/lvim"
-
-volumes:
-  db:
-  config:
