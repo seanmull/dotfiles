@@ -10,15 +10,20 @@ RUN LV_BRANCH='release-1.3/neovim-0.9' su -c "bash <(curl -s https://raw.githubu
 
 RUN git config --global --add safe.directory "*"
 
-# RUN python3 -m pip install pynvim
-
 RUN npm i -g neovim 
 
-# RUN mkdir -p /home/lunaruser/.local/share/fonts
+COPY --from=golang:1.21-alpine /usr/local/go/ /usr/local/go/
 
-# RUN cd /home/lunaruser/.local/share/fonts && curl -fLO https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/SourceCodePro/Regular/SauceCodeProNerdFontMono-Regular.ttf
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+ENV PATH="/root/go/bin:${PATH}"
+
+RUN go install github.com/jesseduffield/lazygit@latest
+
+RUN git config --global user.name "sean mull"
+
+RUN git config --global user.email "kimlan065@gmail.com"
 
 RUN ln -s /home/lunaruser/.local/bin/lvim /bin
-# RUN git config --add safe.directory /home/lunaruser
-# CMD [ "tail", "-f", "/dev/null" ]
+
 ENTRYPOINT [ "/home/lunaruser/.local/bin/lvim" ]
