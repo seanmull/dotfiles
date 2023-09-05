@@ -2,5 +2,5 @@
 # docker rm -f lvim && docker run -d --name 'lvim' lvim && docker exec -it -t lvim /home/lunaruser/.local/bin/lvim
 # docker run --rm -v $(pwd):$(pwd) -w $(pwd) --mount 'type=bind,source=/mnt/lunarvim/.local/share/lunarvim,destination=/home/lunaruser/.local/share/lunarvim' -i -t lvim .
 # create the volumes
-docker run --rm -v $(pwd):$(pwd) -v lvim_share:/home/lunaruser/.local/share/lunarvim -v lvim_config:/home/lunaruser/.config/lvim -v lvim_cache:/home/lunaruser/.cache/lvim -w $(pwd) -i -t lvim
-# docker run --rm -d --name lvim -v $(pwd):$(pwd) -v lvim_share:/home/lunaruser/.local/share/lunarvim -v lvim_config:/home/lunaruser/.config/lvim -v lvim_cache:/home/lunaruser/.cache/lvim -w $(pwd) lvim && docker exec -it lvim sh
+# docker rm -f lvim && docker run --rm -v $(pwd):$(pwd) -v lvim_share:/home/lunaruser/.local/share/lunarvim -v lvim_config:/home/lunaruser/.config/lvim -v lvim_mason:/root -v lvim_cache:/home/lunaruser/.cache/lvim -w $(pwd) -i -t lvim
+# docker rm -f lvim && docker run --rm -d --name lvim -v $(pwd):$(pwd) -v lvim_share:/home/lunaruser/.local/share/lunarvim -v lvim_mason:/root -v lvim_config:/home/lunaruser/.config/lvim -v lvim_cache:/home/lunaruser/.cache/lvim -w $(pwd) lvim && docker exec -it lvim sh

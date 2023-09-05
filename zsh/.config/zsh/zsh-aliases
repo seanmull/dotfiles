@@ -15,6 +15,8 @@ alias d="cd /var/lib/docker/volumes/lunarvim-docker_config/_data"
 
 # some stuff to allow remote connections from hosts on the network
 alias startxrdp="sudo /etc/init.d/dbus start && sudo /etc/init.d/xrdp start"
+alias pbcopy='clip.exe'
+alias pbpaste="powershell.exe -command 'Get-Clipboard' | tr -d '\r' | head -n -1"
 
 # Git
 alias lg='lazygit'
@@ -41,6 +43,8 @@ alias login_ls="/mnt/c/Windows/System32/OpenSSH/ssh.exe seanm.admin@NL1000UV"
 alias switch_to_prod="kubectl config use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster;"
 alias switch_to_dev="kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;"
 alias tell_me_contexts="kubectl config get-contexts;"
+alias lvim_exec="$HOME/dotfiles/lvim_exec.sh"
+alias lvim_docker="$HOME/dotfiles/lvim_docker.sh"
 
 # Custom scripts
 alias nt="bash addTabInTmux.sh"
