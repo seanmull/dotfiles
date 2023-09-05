@@ -20,11 +20,14 @@ ENV PATH="/root/go/bin:${PATH}"
 
 RUN go install github.com/jesseduffield/lazygit@latest
 
+
 # TODO try moving into entrypoint script
 # RUN git config --global user.name "sean mull"
 
 # RUN git config --global user.email "kimlan065@gmail.com"
 
 RUN ln -s /home/lunaruser/.local/bin/lvim /bin
+
+RUN ls -s /root/.ssh /home/lunaruser/.ssh
 
 ENTRYPOINT [ "/home/lunaruser/.local/bin/lvim" ]
