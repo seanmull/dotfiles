@@ -7,6 +7,5 @@ docker rm -f lvim && \
   -v lvim_config:/home/lunaruser/.config/lvim \
   -v lvim_cache:/home/lunaruser/.cache/lvim \
   -v /home/s/vimwiki:/root/vimwiki \
-  -v /mnt/c/Windows/System32/clip.exe:/mnt/c/Windows/System32/clip.exe \
   -v /home/s/.ssh:/root/.ssh \
   -w $(pwd) lvim && docker exec -it lvim sh

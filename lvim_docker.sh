@@ -10,5 +10,5 @@ docker run --rm -v $lvim_path:$lvim_path -v lvim_share:/home/lunaruser/.local/sh
                                          -v lvim_mason:/root \
                                          -v lvim_cache:/home/lunaruser/.cache/lvim \
                                          -v /home/s/vimwiki:/root/vimwiki \
-                                         -v /mnt/c/Windows/System32/clip.exe:/mnt/c/Windows/System32/clip.exe \
+                                         -v /home/s/.ssh:/root/.ssh \
                                          -w $lvim_path -it lvim
