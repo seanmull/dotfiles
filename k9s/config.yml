@@ -1,0 +1,79 @@
+k9s:
+  refreshRate: 2
+  maxConnRetry: 5
+  enableMouse: false
+  headless: false
+  logoless: false
+  crumbsless: false
+  readOnly: false
+  noExitOnCtrlC: false
+  noIcons: false
+  logger:
+    tail: 5000
+    buffer: 5000
+    sinceSeconds: -1
+    fullScreenLogs: false
+    textWrap: false
+    showTime: false
+  currentContext: arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster
+  currentCluster: arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster
+  clusters:
+    arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster:
+      namespace:
+        active: all
+        lockFavorites: false
+        favorites:
+        - kube-system
+        - rmq
+        - monitoring
+        - live
+        - all
+        - default
+      view:
+        active: pod
+      featureGates:
+        nodeShell: false
+      shellPod:
+        image: busybox:1.35.0
+        command: []
+        args: []
+        namespace: default
+        limits:
+          cpu: 100m
+          memory: 100Mi
+      portForwardAddress: localhost
+    arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster:
+      namespace:
+        active: all
+        lockFavorites: false
+        favorites:
+        - ambassador
+        - live-sm
+        - live
+        - default
+        - all
+        - apps-bj
+        - live-th
+        - live-st
+        - live-sn
+      view:
+        active: pod
+      featureGates:
+        nodeShell: false
+      shellPod:
+        image: busybox:1.35.0
+        command: []
+        args: []
+        namespace: default
+        limits:
+          cpu: 100m
+          memory: 100Mi
+      portForwardAddress: localhost
+  thresholds:
+    cpu:
+      critical: 90
+      warn: 70
+    memory:
+      critical: 90
+      warn: 70
+  screenDumpDir: /tmp/k9s-screens-s
