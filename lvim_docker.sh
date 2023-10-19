@@ -1,8 +1,12 @@
 #!/bin/bash
-# convert from relative path to absolute
-lvim_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-
-cd $lvim_path
+#
+if [ $# -eq 0 ]
+  then
+    export lvim_path=$(pwd)
+  else
+    export lvim_path=$(realpath $1)
+fi
+echo $lvim_path
 
 docker rm -f lvim && \
 docker run --rm -v $lvim_path:$lvim_path -v lvim_share:/home/lunaruser/.local/share/lunarvim \
