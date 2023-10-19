@@ -6,3 +6,4 @@ startuppopupversion: 5
 customcommandshistory:
 - q
 hidecommandlog: true
+ignorewhitespaceindiffview: false

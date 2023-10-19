@@ -92,7 +92,7 @@ export BROWSER="chrome"
 
 # For QT Themes
 export QT_QPA_PLATFORMTHEME=qt5ct
-source ~/.nvm/nvm.sh
+# source $HOME/.nvm/nvm.sh
 # remap caps to escape
 # setxkbmap -option caps:escape
 # swap escape and caps
