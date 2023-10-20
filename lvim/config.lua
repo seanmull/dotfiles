@@ -301,10 +301,10 @@ lvim.plugins = {
 	-- 		"nvim-lua/plenary.nvim",
 	-- 		"nvim-telescope/telescope.nvim",
 	-- 	},
-	-- {
-	-- 	"Exafunction/codeium.vim",
-	-- 	event = "BufEnter",
-	-- }, -- },
+	{
+		"Exafunction/codeium.vim",
+		event = "BufEnter",
+	}, -- },
 }
 
 -- vim.api.nvim_exec("let g:hardtime_default_on = 1", true)
