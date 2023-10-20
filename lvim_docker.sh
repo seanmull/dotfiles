@@ -7,9 +7,10 @@ if [ $# -eq 0 ]
     export lvim_path=$(realpath $1)
 fi
 echo $lvim_path
+export home_path=$(realpath $HOME)
 
 docker rm -f lvim && \
-docker run --rm -v $lvim_path:$lvim_path --net=host --ipc=host -e DISPLAY=$DISPLAY \
+docker run --rm -v $home_path:$home_path --net=host --ipc=host -e DISPLAY=$DISPLAY \
                                          -v lvim_share:/home/lunaruser/.local/share/lunarvim \
                                          -v lvim_config:/home/lunaruser/.config/lvim \
                                          --env="QT_X11_NO_MITSHM=1" \
