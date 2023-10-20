@@ -1,20 +1,16 @@
---[[
-lvim is the global options object
-Linters should be
-filled in as strings with either
-a global executable or a path to
-an executable
-]]
--- THESE ARE EXAMPLE CONFIGS FEEL FREE TO CHANGE TO WHATEVER YOU WANT
-
+-- Read the docs: https://www.lunarvim.org/docs/configuration
+-- Video Tutorials: https://www.youtube.com/watch?v=sFA9kX-Ud_c&list=PLhoH5vyxr6QqGu0i7tt_XoVK9v-KvZ3m6
+-- Forum: https://www.reddit.com/r/lunarvim/
+-- Discord: https://discord.com/invite/Xb9B4Ny
 -- general
-lvim.log.level = "warn"
+lvim.log.level = "info"
 lvim.format_on_save = false
-lvim.colorscheme = "tokyonight"
-lvim.lsp.diagnostics.virtual_text = false
-vim.opt.tabstop = 4
+lvim.colorscheme = "lunar"
+vim.diagnostic.config({ virtual_text = false })
+-- lvim.lsp.diagnostics.virtual_text = false
+vim.opt.tabstop = 2
 vim.opt.timeoutlen = 100
-vim.opt.shiftwidth = 4
+vim.opt.shiftwidth = 2
 -- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
 vim.opt.relativenumber = true
@@ -23,23 +19,37 @@ vim.api.nvim_exec("inoremap kj <ESC>", true)
 vim.api.nvim_exec("nnoremap gx :!xdg-open <cWORD> &<CR><CR>", true)
 lvim.keys.normal_mode["<S-l>"] = ":BufferLineCycleNext<CR>"
 lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>"
+lvim.keys.insert_mode["<S-q>"] = "<Cmd>call codeium#CycleCompletions(-1)<CR>"
+lvim.keys.insert_mode["<S-x>"] = "<Cmd>call codeium#CycleCompletions(1)<CR>"
 lvim.builtin.dap.ui.auto_open = false
 lvim.builtin.telescope = {
   active = true,
   defaults = {
-    layout_strategies = "horizontal"
-  }
+    layout_strategies = "horizontal",
+  },
 }
-require('lspconfig').sumneko_lua.setup({
-    settings = {
-        Lua = {
-            workspace = {
-                -- Make the server aware of Neovim runtime files
-                checkThirdParty = false,
-            },
-        }
-    }
-})
+-- vim.api.nvim_exec("let s:clip='/mnt/c/Windows/System32/clip.exe' if executable(s:clip) augroup WSLYank autocmd! autocmd TextYankPost * if v:event.operator ==# 'y' | call system(s:clip, @0) | endif augroup END endif", true)
+
+ do local clip, opts = '/mnt/c/Windows/System32/clip.exe', {}
+  function opts.callback()
+    if vim.v.event.operator ~= 'y' then return end
+    vim.fn.system(clip, vim.fn.getreg(0))
+  end
+  if vim.fn.executable(clip) then
+    opts.group = vim.api.nvim_create_augroup("WSLYank", {clear = true})
+    vim.api.nvim_create_autocmd("TextYankPost", opts)
+  end
+end
+-- require("lspconfig").sumneko_lua.setup({
+-- 	settings = {
+-- 		Lua = {
+-- 			workspace = {
+-- 				-- Make the server aware of Neovim runtime files
+-- 				checkThirdParty = false,
+-- 			},
+-- 		},
+-- 	},
+-- })
 -- for quickly running scripts use which_key
 -- lvim.builtin.which_key.mappings["x"] = {
 -- name = "+Execute",
@@ -47,20 +57,21 @@ require('lspconfig').sumneko_lua.setup({
 --   n = { "<cmd>call vimspector#RunToCursor()<cr>", "Run to cursor" },
 --   t = { "<cmd>call vimspector#Launch()<cr>", "Launch" },
 -- }
-lvim.keys.normal_mode["sh"] = ":!chmod +x % && source %"
--- lvim.keys.normal_mode["nd"] = ":!node %"
+-- lvim.keys.normal_mode["sh"] = ":!chmod +x % && source % <cr>"
+-- lvim.keys.normal_mode["nd"] = ":!node % <cr>"
 -- lvim.keys.normal_mode["ts"] = ":!ts-node %"
 
--- vim.api.nvim_exec("nnoremap sh :!chmod +x % && source %", true)
+-- vim.api.nvim_exec("nnoremap sh :!chmod +x % && source % <cr>", true)
 
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
 -- add your own keymapping
-lvim.keys.normal_mode["<C-s>"] = ":w<cr>"
+-- lvim.keys.normal_mode["<C-s>"] = ":w<cr>"
 -- unmap a default keymapping
--- vim.keymap.del("n", "<C-Up>")
+vim.keymap.del("n", "<C-Up>")
 -- override a default keymapping
 -- lvim.keys.normal_mode["<C-q>"] = ":q<cr>" -- or vim.keymap.set("n", "<C-q>", ":q<cr>" )
+lvim.builtin.which_key.mappings["f"] = { "<cmd>Telescope find_files<CR>", "Projects" }
 lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
 lvim.builtin.which_key.mappings["W"] = {
   name = "+Vimwiki",
@@ -68,7 +79,12 @@ lvim.builtin.which_key.mappings["W"] = {
   t = { "<cmd>VimwikiToggleListItem<CR>", "ToggleListItem" },
 }
 lvim.builtin.which_key.mappings["Z"] = { "<cmd>LazyGit<CR>", "LazyGit" }
--- lvim.builtin.which_key.mappings["B"] = { "<cmd>Telescope bookmarks<CR>", "Browser" }
+lvim.builtin.which_key.mappings["C"] = {
+  name = "+Codium",
+  p = { "<Cmd>call codeium#CycleCompletions(1)<CR>", "Previous" },
+  n = { "<Cmd>call codeium#CycleCompletions(-1)<CR>", "Next" },
+}
+lvim.builtin.which_key.mappings["B"] = { "<cmd>Telescope bookmarks<CR>", "Browser" }
 lvim.builtin.which_key.mappings["t"] = {
   name = "+Test",
   f = { "<cmd>TestFile -v<cr>", "TestFile" },
@@ -76,14 +92,13 @@ lvim.builtin.which_key.mappings["t"] = {
 }
 
 lvim.builtin.which_key.mappings["dh"] = { "<cmd>lua require'dap.ui.widgets'.hover()<cr>", "Hover" }
-lvim.builtin.which_key.mappings["dQ"] = { "<cmd>lua local  widgets=require'dap.ui.widgets';widgets.centered_float(widgets.scopes)<cr>",
-  "Scopes" }
+lvim.builtin.which_key.mappings["dQ"] =
+{ "<cmd>lua local  widgets=require'dap.ui.widgets';widgets.centered_float(widgets.scopes)<cr>", "Scopes" }
 lvim.builtin.which_key.mappings["dv"] = { "<cmd>Telescope dap variables<cr>", "Variables" }
 lvim.builtin.which_key.mappings["La"] = {
   "<cmd>DapShowLog<cr>",
   "view dap log",
 }
-
 
 -- Change Telescope navigation to use j and k for navigation and n and p for history in both input and normal mode.
 -- we use protected-mode (pcall) just in case the plugin wasn't loaded yet.
@@ -123,12 +138,12 @@ lvim.builtin.terminal.active = true
 lvim.builtin.nvimtree.setup.view.side = "left"
 lvim.builtin.nvimtree.setup.renderer.icons.show.git = false
 
--- Runners available are 'pytest', 'nose', 'nose2', 'djangotest', 'djangonose', 'mamba', and Python's built-in unittest as 'pyunit'
-vim.api.nvim_exec("let test#python#runner = 'pytest'", true)
--- TODO: Cannot get vimspector to see this directory
-vim.api.nvim_exec("let g:vimspector_base_dir = expand('$HOME/dotfiles')", true)
-vim.api.nvim_exec("let g:vimwiki_list = [{'path': '~/vimwiki/', 'syntax': 'markdown', 'ext': '.md'}]", true)
--- if you don't want all the parsers change this to a table of the ones you want
+-- -- Runners available are 'pytest', 'nose', 'nose2', 'djangotest', 'djangonose', 'mamba', and Python's built-in unittest as 'pyunit'
+-- vim.api.nvim_exec("let test#python#runner = 'pytest'", true)
+-- -- TODO: Cannot get vimspector to see this directory
+-- vim.api.nvim_exec("let g:vimspector_base_dir = expand('$HOME/dotfiles')", true)
+vim.api.nvim_exec("let g:vimwiki_list = [{'path': '/root/vimwiki/', 'syntax': 'markdown', 'ext': '.md'}]", true)
+-- -- if you don't want all the parsers change this to a table of the ones you want
 lvim.builtin.treesitter.ensure_installed = {
   "bash",
   "c",
@@ -190,64 +205,63 @@ lvim.builtin.treesitter.highlight.enabled = true
 --   buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc") end
 
 -- -- set a formatter, this will override the language server formatting capabilities (if it exists)
-local formatters = require("lvim.lsp.null-ls.formatters")
-formatters.setup({
-  --   { command = "black", filetypes = { "python" } },
-  --   { command = "isort", filetypes = { "python" } },
-  {
-    command = "stylua",
-    filetypes = { "lua" },
-  },
-  {
-    command = "shfmt",
-    filetypes = { "bash" },
-  },
-  {
-    -- each formatter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
-    command = "prettier",
-    ---@usage arguments to pass to the formatter these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
-    extra_args = { "--print-with", "100", "--tab-width", "4" },
-    ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
-    filetypes = { "typescript", "typescriptreact", "javascript", "markdown", "json", "vimwiki" },
-  },
-})
+-- local formatters = require("lvim.lsp.null-ls.formatters")
+-- formatters.setup({
+-- 	--   { command = "black", filetypes = { "python" } },
+-- 	--   { command = "isort", filetypes = { "python" } },
+-- 	{
+-- 		command = "stylua",
+-- 		filetypes = { "lua" },
+-- 	},
+-- 	{
+-- 		command = "shfmt",
+-- 		filetypes = { "bash" },
+-- 	},
+-- 	{
+-- 		-- each formatter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
+-- 		command = "prettier",
+-- 		---@usage arguments to pass to the formatter these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
+-- 		extra_args = { "--print-with", "100", "--tab-width", "4" },
+-- 		---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
+-- 		filetypes = { "typescript", "typescriptreact", "javascript", "markdown", "json", "vimwiki" },
+-- 	},
+-- })
 
 -- -- set additional linters
-local linters = require("lvim.lsp.null-ls.linters")
-linters.setup({
-  -- { command = "vale", filetypes = { "markdown" } },
-  --   { command = "flake8", filetypes = { "python" } },
-  -- { command = "eslint" },
-  {
-    -- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
-    command = "shellcheck",
-    ---@usage arguments to pass to the formatter
-    -- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
-    -- extra_args = { "--severity", "warning" },
-    -- filetypes = { "bash"  }
-  },
-  {
-    command = "codespell",
-    ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
-    filetypes = { "javascript", "python", "typescript", "bash", "lua" },
-  },
-})
+-- local linters = require("lvim.lsp.null-ls.linters")
+-- linters.setup({
+-- 	-- { command = "vale", filetypes = { "markdown" } },
+-- 	--   { command = "flake8", filetypes = { "python" } },
+-- 	-- { command = "eslint" },
+-- 	{
+-- 		-- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
+-- 		command = "shellcheck",
+-- 		---@usage arguments to pass to the formatter
+-- 		-- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
+-- 		-- extra_args = { "--severity", "warning" },
+-- 		-- filetypes = { "bash"  }
+-- 	},
+-- 	{
+-- 		command = "codespell",
+-- 		---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
+-- 		filetypes = { "javascript", "python", "typescript", "bash", "lua" },
+-- 	},
+-- })
 
 -- Additional Plugins
 lvim.plugins = {
--- {'ojroques/vim-oscyank', branch = 'main'},
-  { "kristijanhusak/vim-dadbod-ui" },
-  { "xolox/vim-misc" },
-  { "sysid/vimwiki-nirvana" },
-  { "z0mbix/vim-shfmt" },
-  { "tpope/vim-dadbod" },
-  { "ckipp01/stylua-nvim", run = "cargo install stylua" },
-  { "takac/vim-hardtime" },
+  -- { "kristijanhusak/vim-dadbod-ui" },
+  -- { "xolox/vim-misc" },
+  -- { "sysid/vimwiki-nirvana" },
+  -- { "z0mbix/vim-shfmt" },
+  -- { "tpope/vim-dadbod" },
+  -- { "ckipp01/stylua-nvim", run = "cargo install stylua" },
+  -- { "takac/vim-hardtime" },
   { "tpope/vim-surround" },
-  {
-    "folke/trouble.nvim",
-    cmd = "TroubleToggle",
-  },
+  -- {
+  -- 	"folke/trouble.nvim",
+  -- 	cmd = "TroubleToggle",
+  -- },
   { "ggandor/lightspeed.nvim" },
   { "metakirby5/codi.vim" },
   { "vim-test/vim-test" },
@@ -259,27 +273,41 @@ lvim.plugins = {
   { "nvim-telescope/telescope-media-files.nvim" },
   { "vimwiki/vimwiki" },
   {
-    "iamcco/markdown-preview.nvim",
-    run = function()
-      vim.fn["mkdp#util#install"]()
-    end,
+    "iamcco/markdown-preview.nvim"
   },
   { "nvim-telescope/telescope-dap.nvim" },
+  -- {
+  -- 	"jackMort/ChatGPT.nvim",
+  -- 	config = function()
+  -- 		require("chatgpt").setup({
+  -- 			popup_input = {
+  -- 				submit = "<CR>",
+  -- 			},
+  -- 		})
+  -- 	end,
+  -- 	requires = {
+  -- 		"MunifTanjim/nui.nvim",
+  -- 		"nvim-lua/plenary.nvim",
+  -- 		"nvim-telescope/telescope.nvim",
+  -- 	},
+  -- {
+  --   "Exafunction/codeium.vim",
+  --   event = "BufEnter",
+  -- } -- },
 }
-
 -- vim.api.nvim_exec("let g:hardtime_default_on = 1", true)
-require("telescope").load_extension("bookmarks")
-require("telescope").setup({
-  extensions = {
-    bookmarks = {
-      selected_browser = "chrome",
-      -- url_open_command = 'open',
-      url_open_plugin = "open_browser",
-      full_path = true,
-      firefox_profile_name = nil,
-    },
-  },
-})
+-- require("telescope").load_extension("bookmarks")
+-- require("telescope").setup({
+-- 	extensions = {
+-- 		bookmarks = {
+-- 			selected_browser = "chrome",
+-- 			-- url_open_command = 'open',
+-- 			url_open_plugin = "open_browser",
+-- 			full_path = true,
+-- 			firefox_profile_name = nil,
+-- 		},
+-- 	},
+-- })
 require("telescope").load_extension("lazygit")
 require("telescope").load_extension("media_files")
 require("telescope").setup({
@@ -306,26 +334,26 @@ dap.set_log_level("TRACE")
 --   host = '127.0.0.1',
 --   port = 3000
 -- }
--- dap.adapters.node2 = {
---   type = 'executable',
---   command = '/usr/bin/node',
---   args = { os.getenv('HOME') .. '/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js' },
--- }
 dap.adapters.node = {
-  type = "executable",
-  command = "/usr/bin/node",
-  args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
+  type = 'executable',
+  command = '/usr/bin/node',
+  args = { '/root/.local/share/lvim/mason/packages/node-debug2-adapter/out/src/nodeDebug.js' },
 }
-dap.adapters.javascript = {
-  type = "executable",
-  command = "/usr/bin/node",
-  args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
-}
-dap.adapters.typescript = {
-  type = "executable",
-  command = "/usr/bin/node",
-  args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
-}
+-- dap.adapters.node = {
+-- 	type = "executable",
+-- 	command = "/usr/bin/node",
+-- 	args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
+-- }
+-- dap.adapters.javascript = {
+-- 	type = "executable",
+-- 	command = "/usr/bin/node",
+-- 	args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
+-- }
+-- dap.adapters.typescript = {
+-- 	type = "executable",
+-- 	command = "/usr/bin/node",
+-- 	args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
+-- }
 require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2", "node" } })
 
 -- dap.configurations.javascript = {
@@ -377,10 +405,11 @@ require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescrip
 --   -- enable wrap mode for json files only
 --   command = "setlocal wrap",
 -- })
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "zsh",
-  callback = function()
-    -- let treesitter use bash highlight for zsh files as well
-    require("nvim-treesitter.highlight").attach(0, "bash")
-  end,
-})
+-- vim.api.nvim_create_autocmd("FileType", {
+-- 	pattern = "zsh",
+-- 	callback = function()
+-- 		-- let treesitter use bash highlight for zsh files as well
+-- 		require("nvim-treesitter.highlight").attach(0, "bash")
+-- 	end,
+-- })
+
