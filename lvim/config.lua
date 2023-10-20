@@ -7,7 +7,6 @@ an executable
 helllo123
 ]]
 -- THESE ARE EXAMPLE CONFIGS FEEL FREE TO CHANGE TO WHATEVER YOU WANT
-
 -- general
 lvim.log.level = "warn"
 lvim.format_on_save = false
@@ -22,7 +21,7 @@ vim.opt.relativenumber = true
 vim.api.nvim_exec("inoremap jk <ESC>", true)
 vim.api.nvim_exec("inoremap kj <ESC>", true)
 vim.api.nvim_exec("nnoremap gx :!xdg-open <cWORD> &<CR><CR>", true)
--- vim.api.nvim_exec("let g:codeium_disable_bindings = 1", true)
+vim.api.nvim_exec("let g:codeium_disable_bindings = 1", true)
 -- vim.api.nvim_exec("imap <script><silent><nowait><expr> <C-z> codeium#Accept()", true)
 -- vim.api.nvim_exec("imap <S-q>   <Cmd>call codeium#CycleCompletions(1)<CR>", true)
 -- vim.api.nvim_exec("imap <S-x>   <Cmd>call codeium#CycleCompletions(-1)<CR>", true)
@@ -89,11 +88,16 @@ lvim.builtin.which_key.mappings["t"] = {
 	n = { "<cmd>TestNearest -v<cr>", "TestNearest" },
 }
 
-
 lvim.builtin.which_key.mappings["k"] = {
 	name = "+Kube",
-	a = { "<cmd>!kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && kubectl apply -f %<CR>", "Dev apply" },
-	d = { "<cmd>!kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && kubectl delete -f %<CR>", "Dev remove" },
+	a = {
+		"<cmd>!kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && kubectl apply -f %<CR>",
+		"Dev apply",
+	},
+	d = {
+		"<cmd>!kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && kubectl delete -f %<CR>",
+		"Dev remove",
+	},
 	-- a = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl apply -f %<CR>", "Prod apply" },
 	-- d = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl delete -f %<CR>", "Prod remove" }
 }
@@ -303,8 +307,22 @@ lvim.plugins = {
 	-- 	},
 	{
 		"Exafunction/codeium.vim",
-		event = "BufEnter",
-	}, -- },
+		config = function()
+			-- Change '<C-g>' here to any keycode you like.
+			vim.keymap.set("i", "<c-x>", function()
+				return vim.fn["codeium#Accept"]()
+			end, { expr = true })
+			vim.keymap.set("i", "<c-d>", function()
+				return vim.fn["codeium#CycleCompletions"](1)
+			end, { expr = true })
+			vim.keymap.set("i", "<c-f>", function()
+				return vim.fn["codeium#CycleCompletions"](-1)
+			end, { expr = true })
+			-- vim.keymap.set("i", "<c-x>", function()
+			-- 	return vim.fn["codeium#Clear"]()
+			-- end, { expr = true })
+		end,
+	},
 }
 
 -- vim.api.nvim_exec("let g:hardtime_default_on = 1", true)
