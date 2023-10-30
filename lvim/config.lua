@@ -59,7 +59,7 @@ require("lspconfig").sumneko_lua.setup({
 -- lvim.keys.normal_mode["nd"] = ":!node % <cr>"
 -- lvim.keys.normal_mode["ts"] = ":!ts-node %"
 
-vim.api.nvim_exec("nnoremap sh :!chmod +x % && source % <cr>", true)
+-- vim.api.nvim_exec("nnoremap sh :!chmod +x % && source % <cr>", true)
 
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
@@ -274,7 +274,7 @@ lvim.plugins = {
 		"folke/trouble.nvim",
 		cmd = "TroubleToggle",
 	},
-	{ "ggandor/lightspeed.nvim" },
+	{ "ggandor/leap.nvim" },
 	{ "metakirby5/codi.vim" },
 	{ "vim-test/vim-test" },
 	-- change defaults on bookmarks.lua to chrome and open_browser
@@ -291,7 +291,6 @@ lvim.plugins = {
 		end,
 	},
 	{ "nvim-telescope/telescope-dap.nvim" },
-	-- {
 	-- 	"jackMort/ChatGPT.nvim",
 	-- 	config = function()
 	-- 		require("chatgpt").setup({
@@ -305,6 +304,21 @@ lvim.plugins = {
 	-- 		"nvim-lua/plenary.nvim",
 	-- 		"nvim-telescope/telescope.nvim",
 	-- 	},
+	-- {
+	-- 	"chipsenkbeil/distant.nvim",
+	-- 	branch = "v0.3",
+	-- 	config = function()
+	-- 		require("distant"):setup()
+	-- 	end,
+	-- },
+	{
+		"EthanJWright/vs-tasks.nvim",
+		requires = {
+			"nvim-lua/popup.nvim",
+			"nvim-lua/plenary.nvim",
+			"nvim-telescope/telescope.nvim",
+		},
+	},
 	{
 		"Exafunction/codeium.vim",
 		config = function()
@@ -325,6 +339,7 @@ lvim.plugins = {
 	},
 }
 
+require('leap').add_default_mappings()
 -- vim.api.nvim_exec("let g:hardtime_default_on = 1", true)
 require("telescope").load_extension("bookmarks")
 require("telescope").setup({
@@ -426,6 +441,15 @@ require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescrip
 --     port = 9229
 --     -- processId = require 'dap.utils'.pick_process,
 --   },
+-- }
+-- these are all the default values
+-- local neuron = require('neuron')
+-- neuron.setup = {
+--     virtual_titles = true,
+--     mappings = true,
+--     run = nil, -- function to run when in neuron dir
+--     neuron_dir = "~/neuron", -- the directory of all of your notes, expanded by default (currently supports only one directory for notes, find a way to detect neuron.dhall to use any directory)
+--     leader = "gz", -- the leader key to for all mappings, remember with 'go zettel'
 -- }
 -- require("dapui").setup()
 -- lvim.keys.normal_mode["<leader>U"] = ":lua require('dapui').toggle()<CR>"
