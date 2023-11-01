@@ -10,6 +10,6 @@ docker rm -f lvim && \
   -v lvim_mason:/root \
   -v lvim_config:/home/lunaruser/.config/lvim \
   -v lvim_cache:/home/lunaruser/.cache/lvim \
-  -v /home/s/vimwiki:/root/vimwiki \
-  -v /home/s/.ssh:/root/.ssh \
+  -v /home/seanm@NIGHTLIFE.COM.AU/vimwiki:/root/vimwiki \
+  -v /home/seanm@NIGHTLIFE.COM.AU/.ssh:/root/.ssh \
   -w $(pwd) lvim && docker exec -it lvim sh
