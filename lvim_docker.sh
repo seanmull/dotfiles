@@ -18,6 +18,6 @@ docker run --rm -v $(pwd):$(pwd) --net=host --ipc=host -e DISPLAY=$DISPLAY \
                                          -v /tmp/.X11-unix:/tmp/.X11-unix \
                                          -v lvim_mason:/root \
                                          -v lvim_cache:/home/lunaruser/.cache/lvim \
-                                         -v /home/s/vimwiki:/root/vimwiki \
-                                         -v /home/s/.ssh:/root/.ssh \
+                                         -v /home/seanm@NIGHTLIFE.COM.AU/vimwiki:/root/vimwiki \
+                                         -v /home/seanm@NIGHTLIFE.COM.AU/.ssh:/root/.ssh \
 					 -w $(pwd) -it lvim
