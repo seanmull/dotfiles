@@ -20,4 +20,4 @@ docker run --rm -v $home_path:$home_path --net=host --ipc=host -e DISPLAY=$DISPL
                                          -v lvim_cache:/home/lunaruser/.cache/lvim \
                                          -v /home/seanm@NIGHTLIFE.COM.AU/vimwiki:/root/vimwiki \
                                          -v /home/seanm@NIGHTLIFE.COM.AU/.ssh:/root/.ssh \
-					 -w $lvim_path -it lvim
+                                         -w $lvim_path -it lvim
