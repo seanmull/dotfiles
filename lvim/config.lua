@@ -30,16 +30,16 @@ lvim.builtin.telescope = {
 
 -- vim.api.nvim_exec("let s:clip='/mnt/c/Windows/System32/clip.exe' if executable(s:clip) augroup WSLYank autocmd! autocmd TextYankPost * if v:event.operator ==# 'y' | call system(s:clip, @0) | endif augroup END endif", true)
 
- do local clip, opts = '/mnt/c/Windows/System32/clip.exe', {}
-  function opts.callback()
-    if vim.v.event.operator ~= 'y' then return end
-    vim.fn.system(clip, vim.fn.getreg(0))
-  end
-  if vim.fn.executable(clip) then
-    opts.group = vim.api.nvim_create_augroup("WSLYank", {clear = true})
-    vim.api.nvim_create_autocmd("TextYankPost", opts)
-  end
-end
+--  do local clip, opts = '/mnt/c/Windows/System32/clip.exe', {}
+--   function opts.callback()
+--     if vim.v.event.operator ~= 'y' then return end
+--     vim.fn.system(clip, vim.fn.getreg(0))
+--   end
+--   if vim.fn.executable(clip) then
+--     opts.group = vim.api.nvim_create_augroup("WSLYank", {clear = true})
+--     vim.api.nvim_create_autocmd("TextYankPost", opts)
+--   end
+-- end
 -- require("lspconfig").sumneko_lua.setup({
 -- 	settings = {
 -- 		Lua = {
@@ -205,48 +205,52 @@ lvim.builtin.treesitter.highlight.enabled = true
 --   buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc") end
 
 -- -- set a formatter, this will override the language server formatting capabilities (if it exists)
--- local formatters = require("lvim.lsp.null-ls.formatters")
--- formatters.setup({
--- 	--   { command = "black", filetypes = { "python" } },
--- 	--   { command = "isort", filetypes = { "python" } },
--- 	{
--- 		command = "stylua",
--- 		filetypes = { "lua" },
--- 	},
--- 	{
--- 		command = "shfmt",
--- 		filetypes = { "bash" },
--- 	},
--- 	{
--- 		-- each formatter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
--- 		command = "prettier",
--- 		---@usage arguments to pass to the formatter these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
--- 		extra_args = { "--print-with", "100", "--tab-width", "4" },
--- 		---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
--- 		filetypes = { "typescript", "typescriptreact", "javascript", "markdown", "json", "vimwiki" },
--- 	},
--- })
+local formatters = require("lvim.lsp.null-ls.formatters")
+formatters.setup({
+  --   { command = "black", filetypes = { "python" } },
+  --   { command = "isort", filetypes = { "python" } },
+  -- {
+  -- 	command = "stylua",
+  -- 	filetypes = { "lua" },
+  -- },
+  {
+    command = "shfmt",
+    filetypes = { "bash" },
+  },
+  -- {
+  --   command = "pretty_php",
+  --   filetypes = { "php" },
+  -- },
+  {
+    -- each formatter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
+    command = "prettier",
+    ---@usage arguments to pass to the formatter these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
+    extra_args = { "--print-with", "100", "--tab-width", "4" },
+    ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
+    filetypes = { "typescript", "typescriptreact", "javascript", "markdown", "json", "vimwiki" },
+  },
+})
 
 -- -- set additional linters
--- local linters = require("lvim.lsp.null-ls.linters")
--- linters.setup({
--- 	-- { command = "vale", filetypes = { "markdown" } },
--- 	--   { command = "flake8", filetypes = { "python" } },
--- 	-- { command = "eslint" },
--- 	{
--- 		-- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
--- 		command = "shellcheck",
--- 		---@usage arguments to pass to the formatter
--- 		-- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
--- 		-- extra_args = { "--severity", "warning" },
--- 		-- filetypes = { "bash"  }
--- 	},
--- 	{
--- 		command = "codespell",
--- 		---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
--- 		filetypes = { "javascript", "python", "typescript", "bash", "lua" },
--- 	},
--- })
+local linters = require("lvim.lsp.null-ls.linters")
+linters.setup({
+  -- { command = "vale", filetypes = { "markdown" } },
+  { command = "pylint", filetypes = { "python" } },
+  -- { command = "eslint" },
+  -- {
+  -- 	-- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
+  -- 	command = "shellcheck",
+  -- 	---@usage arguments to pass to the formatter
+  -- 	-- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
+  -- 	-- extra_args = { "--severity", "warning" },
+  -- 	-- filetypes = { "bash"  }
+  -- },
+  -- {
+  -- 	command = "codespell",
+  -- 	---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
+  -- 	filetypes = { "javascript", "python", "typescript", "bash", "lua" },
+  -- },
+})
 
 -- Additional Plugins
 lvim.plugins = {
@@ -257,7 +261,7 @@ lvim.plugins = {
   -- { "tpope/vim-dadbod" },
   -- { "ckipp01/stylua-nvim", run = "cargo install stylua" },
   -- { "takac/vim-hardtime" },
-  { "tpope/vim-surround" },
+  -- { "tpope/vim-surround" },
   -- {
   -- 	"folke/trouble.nvim",
   -- 	cmd = "TroubleToggle",
@@ -339,6 +343,12 @@ dap.adapters.node = {
   command = '/usr/bin/node',
   args = { '/root/.local/share/lvim/mason/packages/node-debug2-adapter/out/src/nodeDebug.js' },
 }
+
+dap.adapters.php = {
+  type = 'executable',
+  command = '/usr/bin/node',
+  args = { '/root/.local/share/lvim/mason/packages/php-debug-adapter/extension/out/phpDebug.js' },
+}
 -- dap.adapters.node = {
 -- 	type = "executable",
 -- 	command = "/usr/bin/node",
@@ -355,6 +365,7 @@ dap.adapters.node = {
 -- 	args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
 -- }
 require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2", "node" } })
+require("dap.ext.vscode").load_launchjs(nil, { php = { "php" } })
 
 -- dap.configurations.javascript = {
 --   {
@@ -412,4 +423,3 @@ require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescrip
 -- 		require("nvim-treesitter.highlight").attach(0, "bash")
 -- 	end,
 -- })
-
