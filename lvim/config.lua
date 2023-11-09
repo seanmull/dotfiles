@@ -83,23 +83,24 @@ lvim.builtin.which_key.mappings["Z"] = { "<cmd>LazyGit<CR>", "LazyGit" }
 -- }
 -- lvim.builtin.which_key.mappings["B"] = { "<cmd>Telescope bookmarks<CR>", "Browser" }
 lvim.builtin.which_key.mappings["t"] = {
-	name = "+Test",
+	name = "+Test/Tasks",
 	f = { "<cmd>TestFile -v<cr>", "TestFile" },
 	n = { "<cmd>TestNearest -v<cr>", "TestNearest" },
+	t = { "<cmd>lua require('telescope').extensions.vstask.tasks()<CR>", "Get Tasks" },
 }
 
 lvim.builtin.which_key.mappings["k"] = {
 	name = "+Kube",
-	a = {
+	da = {
 		"<cmd>!kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && kubectl apply -f %<CR>",
 		"Dev apply",
 	},
-	d = {
+	dd = {
 		"<cmd>!kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && kubectl delete -f %<CR>",
 		"Dev remove",
 	},
-	-- a = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl apply -f %<CR>", "Prod apply" },
-	-- d = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl delete -f %<CR>", "Prod remove" }
+	pa = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl apply -f %<CR>", "Prod apply" },
+	pd = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl delete -f %<CR>", "Prod remove" }
 }
 
 lvim.builtin.which_key.mappings["dh"] = { "<cmd>lua require'dap.ui.widgets'.hover()<cr>", "Hover" }
@@ -262,6 +263,14 @@ linters.setup({
 -- Additional Plugins
 lvim.plugins = {
 	-- {'ojroques/vim-oscyank', branch = 'main'},
+	{
+		"EthanJWright/vs-tasks.nvim",
+		dependencies = {
+			"nvim-lua/popup.nvim",
+			"nvim-lua/plenary.nvim",
+			"nvim-telescope/telescope.nvim",
+		},
+	},
 	{ "kristijanhusak/vim-dadbod-ui" },
 	{ "xolox/vim-misc" },
 	{ "sysid/vimwiki-nirvana" },
@@ -291,6 +300,7 @@ lvim.plugins = {
 		end,
 	},
 	{ "nvim-telescope/telescope-dap.nvim" },
+
 	-- 	"jackMort/ChatGPT.nvim",
 	-- 	config = function()
 	-- 		require("chatgpt").setup({
@@ -312,14 +322,6 @@ lvim.plugins = {
 	-- 	end,
 	-- },
 	{
-		"EthanJWright/vs-tasks.nvim",
-		requires = {
-			"nvim-lua/popup.nvim",
-			"nvim-lua/plenary.nvim",
-			"nvim-telescope/telescope.nvim",
-		},
-	},
-	{
 		"Exafunction/codeium.vim",
 		config = function()
 			-- Change '<C-g>' here to any keycode you like.
@@ -337,9 +339,10 @@ lvim.plugins = {
 			-- end, { expr = true })
 		end,
 	},
+	{ "ThePrimeagen/vim-be-good" },
 }
 
-require('leap').add_default_mappings()
+require("leap").add_default_mappings()
 -- vim.api.nvim_exec("let g:hardtime_default_on = 1", true)
 require("telescope").load_extension("bookmarks")
 require("telescope").setup({
