@@ -1,0 +1,737 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "[LOCAL] create all .env files",
+            "command": "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;aws --profile development sso login;for deploy in `kubectl --request-timeout=5s -n${input:DEST_DEVELOPER_NAMESPACE} get deploy -o yaml | yq e '.items[].metadata.name' -`; do kubectl -n${input:DEST_DEVELOPER_NAMESPACE} exec -it deploy/$deploy -- sh -c \"env | grep -v PATH\" > ${workspaceFolder}/backend/$deploy/deploy/development/.env || echo \"Failed to dump env file for $deploy\"; done;"
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] build & deploy nl-ocd-lite",
+                "command": 
+                    "helm template helm_templates/packy/ -f ./backend/nl-ocd-lite/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] build & deploy all the remaining backends to support enterprize",
+            "linux": {
+                "command": [
+                    "aws --profile development ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 174155838907.dkr.ecr.ap-southeast-2.amazonaws.com;",
+                    "docker build --build-arg BackendName=nl-da -t $(yq e '.image' ./backend/nl-da/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-da/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-macygrey/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-macygrey -t $(yq e '.image' ./backend/nl-macygrey/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-macygrey/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-macygrey/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-markymark -t $(yq e '.image' ./backend/nl-markymark/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-markymark/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-markymark/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-ocd -t $(yq e '.image' ./backend/nl-ocd/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-ocd/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-ocd/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-ocd-chatterbox -t $(yq e '.image' ./backend/nl-ocd-chatterbox/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-ocd-chatterbox/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-ocd-chatterbox/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-postman -t $(yq e '.image' ./backend/nl-postman/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-postman/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-postman/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-ratm -t $(yq e '.image' ./backend/nl-ratm/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-ratm/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-ratm/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-zeppelin -t $(yq e '.image' ./backend/nl-zeppelin/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-zeppelin/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-zeppelin/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-hdms -t $(yq e '.image' ./backend/nl-hdms/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-hdms/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-hdms/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-mgmt -t $(yq e '.image' ./backend/nl-mgmt/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-mgmt/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-mgmt/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-swifty -t $(yq e '.image' ./backend/nl-swifty/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-swifty/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-swifty/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-doors-v1 -t $(yq e '.image' ./backend/nl-doors-v1/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-doors-v1/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-doors-v1/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-all-songs -t $(yq e '.image' ./backend/nl-all-songs/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-all-songs/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-all-songs/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "aws --profile development ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 174155838907.dkr.ecr.ap-southeast-2.amazonaws.com;",
+                    "docker build --build-arg BackendName=nl-da -t $(yq e '.image' ./backend/nl-da/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-da/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-macygrey/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-macygrey -t $(yq e '.image' ./backend/nl-macygrey/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-macygrey/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-macygrey/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-markymark -t $(yq e '.image' ./backend/nl-markymark/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-markymark/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-markymark/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-ocd -t $(yq e '.image' ./backend/nl-ocd/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-ocd/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-ocd/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-ocd-chatterbox -t $(yq e '.image' ./backend/nl-ocd-chatterbox/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-ocd-chatterbox/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-ocd-chatterbox/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-postman -t $(yq e '.image' ./backend/nl-postman/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-postman/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-postman/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-ratm -t $(yq e '.image' ./backend/nl-ratm/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-ratm/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-ratm/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-zeppelin -t $(yq e '.image' ./backend/nl-zeppelin/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-zeppelin/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-zeppelin/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-hdms -t $(yq e '.image' ./backend/nl-hdms/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-hdms/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-hdms/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-mgmt -t $(yq e '.image' ./backend/nl-mgmt/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-mgmt/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-mgmt/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-swifty -t $(yq e '.image' ./backend/nl-swifty/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-swifty/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-swifty/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-doors-v1 -t $(yq e '.image' ./backend/nl-doors-v1/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-doors-v1/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-doors-v1/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "docker build --build-arg BackendName=nl-all-songs -t $(yq e '.image' ./backend/nl-all-songs/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/nl-all-songs/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/nl-all-songs/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "aws --profile development ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 174155838907.dkr.ecr.ap-southeast-2.amazonaws.com && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-mgmt\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-mgmt -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-mgmt\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-mgmt\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-doors-v1\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-doors-v1 -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-doors-v1\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-doors-v1\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-da -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-macygrey\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-macygrey -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-macygrey\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-macygrey\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-markymark\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-markymark -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-markymark\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-markymark\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-ocd\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-ocd -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-ocd\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-ocd\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-ocd-chatterbox\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-ocd-chatterbox -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-ocd-chatterbox\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-ocd-chatterbox\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-postman\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-postman -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-postman\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-postman\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-ratm\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-ratm -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-ratm\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-ratm\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-zeppelin\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-zeppelin -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-zeppelin\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-zeppelin\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\"",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-all-songs\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=nl-zeppelin -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\nl-all-songs\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\nl-all-songs\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] build and deploy all backends for enterprize",
+            "dependsOn": [
+                "[APPS] deploy namespace essentials",
+                "[APPS] build & deploy nl-ocd-lite",
+                "[APPS] build & deploy all the remaining backends to support enterprize"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "[LOCAL] refresh temporary credentials",
+            "linux": {
+                "command": [
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --role-session-name development > ${workspaceFolder}/creds.json.tmp;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && ( cat ${workspaceFolder}/backend/nl-da/deploy/development/.env | grep -vE \"AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN\" ) > ${workspaceFolder}/.env.tmp && mv ${workspaceFolder}/.env.tmp ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && echo \"AWS_ACCESS_KEY_ID=$(jq -rc '.Credentials.AccessKeyId' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && echo \"AWS_SECRET_ACCESS_KEY=$(jq -rc '.Credentials.SecretAccessKey' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && echo \"AWS_SESSION_TOKEN=$(jq -rc '.Credentials.SessionToken' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --role-session-name development > ${workspaceFolder}/creds.json.tmp;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && ( cat ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env | grep -vE \"AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN\" ) > ${workspaceFolder}/.env.tmp && mv ${workspaceFolder}/.env.tmp ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && echo \"AWS_ACCESS_KEY_ID=$(jq -rc '.Credentials.AccessKeyId' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && echo \"AWS_SECRET_ACCESS_KEY=$(jq -rc '.Credentials.SecretAccessKey' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && echo \"AWS_SESSION_TOKEN=$(jq -rc '.Credentials.SessionToken' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-revive-iam-role --role-session-name development > ${workspaceFolder}/creds.json.tmp;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && ( cat ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env | grep -vE \"AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN\" ) > ${workspaceFolder}/.env.tmp && mv ${workspaceFolder}/.env.tmp ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && echo \"AWS_ACCESS_KEY_ID=$(jq -rc '.Credentials.AccessKeyId' ${workspaceFolder}/creds.json.tmp)\" > ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && echo \"AWS_SECRET_ACCESS_KEY=$(jq -rc '.Credentials.SecretAccessKey' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && echo \"AWS_SESSION_TOKEN=$(jq -rc '.Credentials.SessionToken' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "rm creds.json.tmp;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --role-session-name development > ${workspaceFolder}/creds.json.tmp;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && ( cat ${workspaceFolder}/backend/nl-da/deploy/development/.env | grep -vE \"AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN\" ) > ${workspaceFolder}/.env.tmp && mv ${workspaceFolder}/.env.tmp ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && echo \"AWS_ACCESS_KEY_ID=$(jq -rc '.Credentials.AccessKeyId' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && echo \"AWS_SECRET_ACCESS_KEY=$(jq -rc '.Credentials.SecretAccessKey' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-da/deploy/development/.env ] && echo \"AWS_SESSION_TOKEN=$(jq -rc '.Credentials.SessionToken' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-da/deploy/development/.env;",
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --role-session-name development > ${workspaceFolder}/creds.json.tmp;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && ( cat ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env | grep -vE \"AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN\" ) > ${workspaceFolder}/.env.tmp && mv ${workspaceFolder}/.env.tmp ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && echo \"AWS_ACCESS_KEY_ID=$(jq -rc '.Credentials.AccessKeyId' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && echo \"AWS_SECRET_ACCESS_KEY=$(jq -rc '.Credentials.SecretAccessKey' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env ] && echo \"AWS_SESSION_TOKEN=$(jq -rc '.Credentials.SessionToken' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-thumbs-up/deploy/development/.env;",
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-revive-iam-role --role-session-name development > ${workspaceFolder}/creds.json.tmp;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && ( cat ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env | grep -vE \"AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN\" ) > ${workspaceFolder}/.env.tmp && mv ${workspaceFolder}/.env.tmp ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && echo \"AWS_ACCESS_KEY_ID=$(jq -rc '.Credentials.AccessKeyId' ${workspaceFolder}/creds.json.tmp)\" > ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && echo \"AWS_SECRET_ACCESS_KEY=$(jq -rc '.Credentials.SecretAccessKey' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "[ -f ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env ] && echo \"AWS_SESSION_TOKEN=$(jq -rc '.Credentials.SessionToken' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/backend/nl-revive-controller/deploy/development/.env;",
+                    "rm creds.json.tmp;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --role-session-name development > ${workspaceFolder}\\creds.json.tmp && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ( type ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env | findstr /v AWS_ACCESS_KEY_ID | findstr /v AWS_SECRET_ACCESS_KEY | findstr /v AWS_SESSION_TOKEN > ${workspaceFolder}\\.env.tmp ) && move ${workspaceFolder}\\.env.tmp ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.AccessKeyId\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_ACCESS_KEY_ID=%f) >>${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ) ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.SecretAccessKey\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_SECRET_ACCESS_KEY=%f) >>${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ) ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.SessionToken\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_SESSION_TOKEN=%f) >>${workspaceFolder}\\backend\\nl-da\\deploy\\development\\.env ) ) && ",
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --role-session-name development > ${workspaceFolder}\\creds.json.tmp && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ( type ${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env | findstr /v AWS_ACCESS_KEY_ID | findstr /v AWS_SECRET_ACCESS_KEY | findstr /v AWS_SESSION_TOKEN > ${workspaceFolder}\\.env.tmp ) && move ${workspaceFolder}\\.env.tmp ${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.AccessKeyId\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_ACCESS_KEY_ID=%f) >>${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ) ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.SecretAccessKey\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_SECRET_ACCESS_KEY=%f) >>${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ) ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.SessionToken\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_SESSION_TOKEN=%f) >>${workspaceFolder}\\backend\\nl-thumbs-up\\deploy\\development\\.env ) ) && ",
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-revive-iam-role --role-session-name development > ${workspaceFolder}\\creds.json.tmp && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ( type ${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env | findstr /v AWS_ACCESS_KEY_ID | findstr /v AWS_SECRET_ACCESS_KEY | findstr /v AWS_SESSION_TOKEN > ${workspaceFolder}\\.env.tmp ) && move ${workspaceFolder}\\.env.tmp ${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.AccessKeyId\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_ACCESS_KEY_ID=%f) >>${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ) ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.SecretAccessKey\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_SECRET_ACCESS_KEY=%f) >>${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ) ) && ",
+                    "( if exist ${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ( for /f \"tokens=1\" %f in ( 'jq -rc \".Credentials.SessionToken\" ${workspaceFolder}\\creds.json.tmp' ) do (echo AWS_SESSION_TOKEN=%f) >>${workspaceFolder}\\backend\\nl-revive-controller\\deploy\\development\\.env ) ) && ",
+                    "del ${workspaceFolder}\\creds.json.tmp"
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[LOCAL] refresh temporary lambda credentials",
+            "linux": {
+                "command": [
+                    "aws --profile development sts assume-role --role-arn arn:aws:iam::174155838907:role/nightlife-development-nl-revive-iam-role --role-session-name development > ${workspaceFolder}/creds.json.tmp;",
+                    "[ -f ${workspaceFolder}/scripts/nl-revive/.env ] && rm ${workspaceFolder}/scripts/nl-revive/.env;",
+                    "echo \"AWS_ACCESS_KEY_ID=$(jq -rc '.Credentials.AccessKeyId' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/scripts/nl-revive/.env;",
+                    "echo \"AWS_SECRET_ACCESS_KEY=$(jq -rc '.Credentials.SecretAccessKey' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/scripts/nl-revive/.env;",
+                    "echo \"AWS_SESSION_TOKEN=$(jq -rc '.Credentials.SessionToken' ${workspaceFolder}/creds.json.tmp)\" >> ${workspaceFolder}/scripts/nl-revive/.env;"
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] build & deploy backend",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "aws --profile development ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 174155838907.dkr.ecr.ap-southeast-2.amazonaws.com;",
+                    "docker build --build-arg BackendName=${input:BACKEND} -t $(yq e '.image' ./backend/${input:BACKEND}/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/${input:BACKEND}/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/${input:BACKEND}/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "aws --profile development ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 174155838907.dkr.ecr.ap-southeast-2.amazonaws.com;",
+                    "docker build --build-arg BackendName=${input:BACKEND} -t $(yq e '.image' ./backend/${input:BACKEND}/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE} -f ./backend/Dockerfile .;",
+                    "docker push $(yq e '.image' ./backend/${input:BACKEND}/deploy/development/helm_values.yaml)-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "helm template helm_templates/packy/ -f ./backend/${input:BACKEND}/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "aws --profile development ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 174155838907.dkr.ecr.ap-southeast-2.amazonaws.com && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\${input:BACKEND}\\deploy\\development\\helm_values.yaml' ) do ( docker build --build-arg BackendName=${input:BACKEND} -t %f-${input:DEST_DEVELOPER_NAMESPACE} -f ${workspaceFolder}\\backend\\Dockerfile . ) ) && ",
+                    "( for /f %f in ('yq e \".image\" ${workspaceFolder}\\backend\\${input:BACKEND}\\deploy\\development\\helm_values.yaml' ) do ( docker push %f-${input:DEST_DEVELOPER_NAMESPACE} ) ) && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\${input:BACKEND}\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] Deploy backend",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "helm template helm_templates/packy/ -f ./backend/${input:BACKEND}/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "helm template helm_templates/packy/ -f ./backend/${input:BACKEND}/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.spec.template.spec.containers[0].imagePullPolicy = \"Always\"' - | yq e '.spec.template.spec.containers[0].image += \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "( helm template ${workspaceFolder}\\helm_templates\\packy -f ${workspaceFolder}\\backend\\${input:BACKEND}\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".spec.template.spec.containers[0].imagePullPolicy = \\\"Always\\\"\" - | yq e \".spec.template.spec.containers[0].image += \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) && ",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] deploy namespace essentials",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "kubectl get secrets --field-selector type!=kubernetes.io/service-account-token -o yaml | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e 'del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-doors-v1/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-hdms/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-mgmt/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-swifty/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} apply -f ./backend/nl-doors-v1/deploy/svc.yaml;",
+                    "aws --profile development cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file infrastructure/07-eks-cluster/09-application-roles/01-nl-da-role.yml --stack-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --region ap-southeast-2 --tags Name=nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} Environment=Development Service=Lambda --parameter-overrides Namespace=${input:DEST_DEVELOPER_NAMESPACE};",
+                    "aws --profile development cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file infrastructure/07-eks-cluster/09-application-roles/01-nl-thumbs-up-role.yml --stack-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --region ap-southeast-2 --tags Name=nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} Environment=Development Service=Lambda --parameter-overrides Namespace=${input:DEST_DEVELOPER_NAMESPACE};",
+                    "aws --profile development iam get-role --role-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} | jq --arg caller_identity $(aws --profile development sts get-caller-identity | jq -r '.Arn') 'del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\"Effect\":\"Allow\",\"Principal\": {\"AWS\":$caller_identity}, \"Action\": \"sts:AssumeRole\"}] | .Role.AssumeRolePolicyDocument' > trust-policy.json.tmp;",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --policy-document file://trust-policy.json.tmp;",
+                    "aws --profile development iam get-role --role-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} | jq --arg caller_identity $(aws --profile development sts get-caller-identity | jq -r '.Arn') 'del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\"Effect\":\"Allow\",\"Principal\": {\"AWS\":$caller_identity}, \"Action\": \"sts:AssumeRole\"}] | .Role.AssumeRolePolicyDocument' > trust-policy.json.tmp;",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --policy-document file://trust-policy.json.tmp;",
+                    "aws --profile development iam get-role --role-name nightlife-development-nl-revive-iam-role | jq --arg caller_identity $(aws --profile development sts get-caller-identity | jq -r '.Arn') 'del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\"Effect\":\"Allow\",\"Principal\": {\"AWS\":$caller_identity}, \"Action\": \"sts:AssumeRole\"}] | .Role.AssumeRolePolicyDocument' > trust-policy.json.tmp;",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-revive-iam-role --policy-document file://trust-policy.json.tmp;",
+                    "yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' ./infrastructure/07-eks-cluster/09-application-roles/development/01-nl-da-role-sa.yaml | yq e '.metadata.annotations.\"eks.amazonaws.com/role-arn\" = \"arn:aws:iam::174155838907:role/nightlife-development-nl-da-role\" + \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl apply -f -;",
+                    "yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' ./infrastructure/07-eks-cluster/09-application-roles/development/01-nl-thumbs-up-role-sa.yaml | yq e '.metadata.annotations.\"eks.amazonaws.com/role-arn\" = \"arn:aws:iam::174155838907:role/nightlife-development-nl-thumbs-up-role\" + \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl apply -f -;",
+                    "rm trust-policy.json.tmp;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "kubectl get secrets --field-selector type!=kubernetes.io/service-account-token -o yaml | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e 'del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-doors-v1/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-hdms/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\" or .name == \"NLCONF_LIVE_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }, { \"name\": \"NLCONF_LIVE_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-mgmt/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "helm template helm_templates/packy/ -f ./backend/nl-swifty/deploy/development/helm_values.yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"))' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} apply -f ./backend/nl-doors-v1/deploy/svc.yaml;",
+                    "aws --profile development cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file infrastructure/07-eks-cluster/09-application-roles/01-nl-da-role.yml --stack-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --region ap-southeast-2 --tags Name=nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} Environment=Development Service=Lambda --parameter-overrides Namespace=${input:DEST_DEVELOPER_NAMESPACE};",
+                    "aws --profile development cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file infrastructure/07-eks-cluster/09-application-roles/01-nl-thumbs-up-role.yml --stack-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --region ap-southeast-2 --tags Name=nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} Environment=Development Service=Lambda --parameter-overrides Namespace=${input:DEST_DEVELOPER_NAMESPACE};",
+                    "aws --profile development iam get-role --role-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} | jq --arg caller_identity $(aws --profile development sts get-caller-identity | jq -r '.Arn') 'del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\"Effect\":\"Allow\",\"Principal\": {\"AWS\":$caller_identity}, \"Action\": \"sts:AssumeRole\"}] | .Role.AssumeRolePolicyDocument' > trust-policy.json.tmp;",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --policy-document file://trust-policy.json.tmp;",
+                    "aws --profile development iam get-role --role-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} | jq --arg caller_identity $(aws --profile development sts get-caller-identity | jq -r '.Arn') 'del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\"Effect\":\"Allow\",\"Principal\": {\"AWS\":$caller_identity}, \"Action\": \"sts:AssumeRole\"}] | .Role.AssumeRolePolicyDocument' > trust-policy.json.tmp;",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --policy-document file://trust-policy.json.tmp;",
+                    "yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' ./infrastructure/07-eks-cluster/09-application-roles/development/01-nl-da-role-sa.yaml | yq e '.metadata.annotations.\"eks.amazonaws.com/role-arn\" = \"arn:aws:iam::174155838907:role/nightlife-development-nl-da-role\" + \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl apply -f -;",
+                    "yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' ./infrastructure/07-eks-cluster/09-application-roles/development/01-nl-thumbs-up-role-sa.yaml | yq e '.metadata.annotations.\"eks.amazonaws.com/role-arn\" = \"arn:aws:iam::174155838907:role/nightlife-development-nl-thumbs-up-role\" + \"-${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl apply -f -;",
+                    "rm trust-policy.json.tmp;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "kubectl get secrets --field-selector type!=kubernetes.io/service-account-token -o yaml | yq e \".items[].metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \"del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)\" - | kubectl --request-timeout=5s apply -f - && ",
+                    "helm template helm_templates/packy/ -f ${workspaceFolder}\\backend\\nl-doors-v1\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - && ",
+                    "helm template helm_templates/packy/ -f ${workspaceFolder}\\backend\\nl-hdms\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\" or .name == \\\"NLCONF_LIVE_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }, { \\\"name\\\": \\\"NLCONF_LIVE_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - && ",
+                    "helm template helm_templates/packy/ -f ${workspaceFolder}\\backend\\nl-mgmt\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - && ",
+                    "helm template helm_templates/packy/ -f ${workspaceFolder}\\backend\\nl-swifty\\deploy\\development\\helm_values.yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\"))\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - &&",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} apply -f ${workspaceFolder}\\backend\\nl-doors-v1/deploy/svc.yaml && ",
+                    "aws --profile development cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ${workspaceFolder}\\infrastructure\\07-eks-cluster\\09-application-roles\\01-nl-da-role.yml --stack-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --region ap-southeast-2 --tags Name=nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} Environment=Development Service=Lambda --parameter-overrides Namespace=${input:DEST_DEVELOPER_NAMESPACE} && ",
+                    "aws --profile development cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ${workspaceFolder}\\infrastructure\\07-eks-cluster\\09-application-roles\\01-nl-thumbs-up-role.yml --stack-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --region ap-southeast-2 --tags Name=nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} Environment=Development Service=Lambda --parameter-overrides Namespace=${input:DEST_DEVELOPER_NAMESPACE} && ",
+                    "( for /f \"tokens=1\" %f in ( 'aws --profile development sts get-caller-identity ^| jq -r \".Arn\"' ) do ( aws --profile development iam get-role --role-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} | jq --arg caller_identity %f \"del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\": {\\\"AWS\\\":$caller_identity}, \\\"Action\\\": \\\"sts:AssumeRole\\\"}] | .Role.AssumeRolePolicyDocument\" > trust-policy.json.tmp ) ) &&",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} --policy-document file://trust-policy.json.tmp && ",
+                    "( for /f \"tokens=1\" %f in ( 'aws --profile development sts get-caller-identity ^| jq -r \".Arn\"' ) do ( aws --profile development iam get-role --role-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} | jq --arg caller_identity %f \"del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\": {\\\"AWS\\\":$caller_identity}, \\\"Action\\\": \\\"sts:AssumeRole\\\"}] | .Role.AssumeRolePolicyDocument\" > trust-policy.json.tmp ) ) && ",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} --policy-document file://trust-policy.json.tmp && ",
+                    "( for /f \"tokens=1\" %f in ( 'aws --profile development sts get-caller-identity ^| jq -r \".Arn\"' ) do ( aws --profile development iam get-role --role-name nightlife-development-nl-revive-iam-role | jq --arg caller_identity %f \"del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\": {\\\"AWS\\\":$caller_identity}, \\\"Action\\\": \\\"sts:AssumeRole\\\"}] | .Role.AssumeRolePolicyDocument\" > trust-policy.json.tmp ) ) && ",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-revive-iam-role --policy-document file://trust-policy.json.tmp && ",
+                    "yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" ${workspaceFolder}\\infrastructure\\07-eks-cluster\\09-application-roles\\development\\01-nl-da-role-sa.yaml | yq e \".metadata.annotations.\\\"eks.amazonaws.com/role-arn\\\" = \\\"arn:aws:iam::174155838907:role/nightlife-development-nl-da-role\\\" + \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" | kubectl apply -f - && ",
+                    "yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" ${workspaceFolder}\\infrastructure\\07-eks-cluster\\09-application-roles\\development\\01-nl-thumbs-up-role-sa.yaml | yq e \".metadata.annotations.\\\"eks.amazonaws.com/role-arn\\\" = \\\"arn:aws:iam::174155838907:role/nightlife-development-nl-thumbs-up-role\\\" + \\\"-${input:DEST_DEVELOPER_NAMESPACE}\\\"\" | kubectl apply -f - && ",
+                    "del trust-policy.json.tmp && ",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] clone kubernetes resource",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "[ ${input:RESOURCE_TYPE} == \"secret\" ] && kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get secret ${input:RESOURCE_NAME} -o yaml | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e 'del(.metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)' - | kubectl --request-timeout=5s apply -f -;",
+                    "[ ${input:RESOURCE_TYPE} == \"deploy\" ] && kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get deploy ${input:RESOURCE_NAME} -o yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"), .metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' -  | kubectl --request-timeout=5s apply -f -;",
+                    "[ ${input:RESOURCE_TYPE} == \"svc\" ] && kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get svc ${input:RESOURCE_NAME} -o yaml | yq e 'del(select(.spec.type != \"ClusterIP\" or .metadata.name == \"kubernetes\"))' - | yq e 'del(.metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status, .spec.clusterIP, .spec.clusterIPs)' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "[ ${input:RESOURCE_TYPE} == \"secret\" ] && kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get secret ${input:RESOURCE_NAME} -o yaml | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e 'del(.metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)' - | kubectl --request-timeout=5s apply -f -;",
+                    "[ ${input:RESOURCE_TYPE} == \"deploy\" ] && kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get deploy ${input:RESOURCE_NAME}-o yaml | yq e 'del(.spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"), .metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)' - | yq e '.spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' -  | kubectl --request-timeout=5s apply -f -;",
+                    "[ ${input:RESOURCE_TYPE} == \"svc\" ] && kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get svc ${input:RESOURCE_NAME}-o yaml | yq e 'del(select(.spec.type != \"ClusterIP\" or .metadata.name == \"kubernetes\"))' - | yq e 'del(.metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status, .spec.clusterIP, .spec.clusterIPs)' - | yq e '.metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "if ${input:RESOURCE_TYPE}==deploy ( kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get deploy ${input:RESOURCE_NAME} -o yaml | yq e \"del(.spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\"), .metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)\" - | yq e \".spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" -  | kubectl --request-timeout=5s apply -f - ) else ",
+                    "if ${input:RESOURCE_TYPE}==secret ( kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get secrets ${input:RESOURCE_NAME} -o yaml | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \"del(.metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status)\" - | kubectl --request-timeout=5s apply -f - ) else ",
+                    "if ${input:RESOURCE_TYPE}==svc ( kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get svc ${input:RESOURCE_NAME} -o yaml | yq e \"del(select(.spec.type != \\\"ClusterIP\\\" or .metadata.name == \\\"kubernetes\\\"))\" - | yq e \"del(.metadata.managedFields, .metadata.annotations, .metadata.generation, .metadata.creationTimestamp, .metadata.resourceVersion, .metadata.uid, .status, .spec.clusterIP, .spec.clusterIPs)\" - | yq e \".metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - ) &&",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] clone developer namespace",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get secrets --field-selector type!=kubernetes.io/service-account-token -o yaml | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e 'del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)' - | kubectl --request-timeout=5s apply -f -;",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get deploy -o yaml | yq e 'del(.items[].spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"), .items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)' - | yq e '.items[].spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' -  | kubectl --request-timeout=5s apply -f -;",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get svc -o yaml | yq e 'del(.items[] | select(.spec.type != \"ClusterIP\" or .metadata.name == \"kubernetes\"))' - | yq e 'del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status, .items[].spec.clusterIP, .items[].spec.clusterIPs)' - | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get secrets --field-selector type!=kubernetes.io/service-account-token -o yaml | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | yq e 'del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)' - | kubectl --request-timeout=5s apply -f -;",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get deploy -o yaml | yq e 'del(.items[].spec.template.spec.containers[0].env[] | select(.name == \"NLCONF_RMQ__VHOST\"), .items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)' - | yq e '.items[].spec.template.spec.containers[0].env += [{ \"name\": \"NLCONF_RMQ__VHOST\", \"value\": \"${input:DEST_RMQ_NAMESPACE}\" }]' - | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' -  | kubectl --request-timeout=5s apply -f -;",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get svc -o yaml | yq e 'del(.items[] | select(.spec.type != \"ClusterIP\" or .metadata.name == \"kubernetes\"))' - | yq e 'del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status, .items[].spec.clusterIP, .items[].spec.clusterIPs)' - | yq e '.items[].metadata.namespace = \"${input:DEST_DEVELOPER_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get secrets --field-selector type!=kubernetes.io/service-account-token -o yaml | yq e \".items[].metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | yq e \"del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)\" - | kubectl --request-timeout=5s apply -f - && ",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get deploy -o yaml | yq e \"del(.items[].spec.template.spec.containers[0].env[] | select(.name == \\\"NLCONF_RMQ__VHOST\\\"), .items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status)\" - | yq e \".items[].spec.template.spec.containers[0].env += [{ \\\"name\\\": \\\"NLCONF_RMQ__VHOST\\\", \\\"value\\\": \\\"${input:DEST_RMQ_NAMESPACE}\\\" }]\" - | yq e \".items[].metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" -  | kubectl --request-timeout=5s apply -f - && ",
+                    "kubectl -n${input:SRC_DEVELOPER_NAMESPACE} get svc -o yaml | yq e \"del(.items[] | select(.spec.type != \\\"ClusterIP\\\" or .metadata.name == \\\"kubernetes\\\"))\" - | yq e \"del(.items[].metadata.managedFields, .items[].metadata.annotations, .items[].metadata.generation, .items[].metadata.creationTimestamp, .items[].metadata.resourceVersion, .items[].metadata.uid, .items[].status, .items[].spec.clusterIP, .items[].spec.clusterIPs)\" - | yq e \".items[].metadata.namespace = \\\"${input:DEST_DEVELOPER_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - && ",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[APPS] wipe namepsace",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} delete svc,deploy,secrets --all;",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} get sa -o yaml | yq e '.items[].metadata | select(.name != \"default\") | .name' - | xargs kubectl -n${input:DEST_DEVELOPER_NAMESPACE} delete sa ;",
+                    "aws --profile development cloudformation delete-stack --stack-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "aws --profile development cloudformation delete-stack --stack-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE};"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} delete svc,deploy,secrets --all;",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} get sa -o yaml | yq e '.items[].metadata | select(.name != \"default\") | .name' - | xargs kubectl -n${input:DEST_DEVELOPER_NAMESPACE} delete sa ;",
+                    "aws --profile development cloudformation delete-stack --stack-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE};",
+                    "aws --profile development cloudformation delete-stack --stack-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE};"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "kubectl -n${input:DEST_DEVELOPER_NAMESPACE} delete svc,deploy,secrets --all && ",
+                    "( for /f %f in ( 'kubectl -n${input:DEST_DEVELOPER_NAMESPACE} get sa -o yaml ^| yq e \".items[].metadata | select(.name != \\\"default\\\") | .name\" -' ) do ( kubectl -n${input:DEST_DEVELOPER_NAMESPACE} delete sa %f ) ) && ",
+                    "aws --profile development cloudformation delete-stack --stack-name nightlife-development-nl-da-role-${input:DEST_DEVELOPER_NAMESPACE} && ",
+                    "aws --profile development cloudformation delete-stack --stack-name nightlife-development-nl-thumbs-up-role-${input:DEST_DEVELOPER_NAMESPACE} && ",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[RMQ] apply vhost configs",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "yq e '.spec.name = \"${input:DEST_RMQ_NAMESPACE}\"' middleware/ha-rmq/deploy/development/definitions/vhost.yaml | yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/exchanges -name '*.yaml' | xargs yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' | yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/queues -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | yq e '.spec.arguments.\"x-max-length\" = 1000' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/bindings -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "yq e '.spec.name = \"${input:DEST_RMQ_NAMESPACE}\"' middleware/ha-rmq/deploy/development/definitions/vhost.yaml | yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/exchanges -name '*.yaml' | xargs yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' | yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/queues -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | yq e '.spec.arguments.\"x-max-length\" = 1000' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/bindings -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "yq e \".spec.name = \\\"${input:DEST_RMQ_NAMESPACE}\\\"\" middleware/ha-rmq/deploy/development/definitions/vhost.yaml | yq e \".metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s apply -f - && ",
+                    "( if exist ${workspaceFolder}\\tmp ( rmdir /s /q ${workspaceFolder}\\tmp\\ ) ) &&",
+                    "( mkdir ${workspaceFolder}\\tmp ) && ",
+                    "( for /f %f in ( 'dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/exchanges\" ^| findstr /v tmp' ) do ( yq e \".spec.vhost = \\\"${input:DEST_RMQ_NAMESPACE}\\\" | .metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}.\\\" + .metadata.name\" %f > %f.tmp.yaml ) ) && ",
+                    "( for /f %f in ( 'dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/exchanges\" ^| findstr /v tmp' ) do (  move %f.tmp.yaml ${workspaceFolder}\\tmp\\ ) ) && ",
+                    "( kubectl --request-timeout=5s apply -f ${workspaceFolder}\\tmp\\ || echo \"Failure in kubectl apply!\" ) && ",
+                    "( rmdir /s /q ${workspaceFolder}\\tmp\\ ) &&",
+                    "( mkdir ${workspaceFolder}\\tmp ) &&",
+                    "( for /f %f in ('dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/queues\" ^| findstr /v tmp' ) do ( yq e \".metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}.\\\" + .metadata.name | .spec.vhost = \\\"${input:DEST_RMQ_NAMESPACE}\\\" | .spec.arguments.\\\"x-max-length\\\" = 1000\" %f > %f.tmp.yaml ) ) && ",
+                    "( for /f %f in ('dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/queues\" ^| findstr /v tmp' ) do ( move %f.tmp.yaml ${workspaceFolder}\\tmp\\ ) ) && ",
+                    "( kubectl --request-timeout=5s apply -f ${workspaceFolder}\\tmp\\ || echo \"Failure in kubectl apply!\" ) && ",
+                    "( rmdir /s /q ${workspaceFolder}\\tmp\\ ) &&",
+                    "( mkdir ${workspaceFolder}\\tmp ) &&",
+                    "( for /f %f in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\"' ) do ( for /f %g in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\"') do ( for /f %h in ('dir /a-D /S /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\\%g\" ^| findstr /v tmp') do ( yq e \".metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}.\\\" + .metadata.name | .spec.vhost = \\\"${input:DEST_RMQ_NAMESPACE}\\\"\" %h > %h.%f.%g.tmp.yaml ) )  ) ) && ",
+                    "( for /f %f in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\"' ) do ( for /f %g in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\"') do ( for /f %h in ('dir /a-D /S /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\\%g\" ^| findstr /v tmp') do ( move %h.%f.%g.tmp.yaml ${workspaceFolder}\\tmp\\ ) )  ) ) && ",
+                    "( kubectl --request-timeout=5s apply -f ${workspaceFolder}\\tmp\\ || echo \"Failure in kubectl apply!\" ) && ",
+                    "( rmdir /s /q ${workspaceFolder}\\tmp\\ ) &&",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[RMQ] delete vhost configs",
+            "linux": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "find middleware/ha-rmq/deploy/development/definitions/bindings -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' - | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | kubectl --request-timeout=5s delete -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/queues -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' - | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | yq e '.spec.arguments.\"x-max-length\" = 1000' - | kubectl --request-timeout=5s delete -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/exchanges -name '*.yaml' | xargs yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' - | kubectl --request-timeout=5s delete -f -;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster;",
+                    "aws --profile development sso login;",
+                    "find middleware/ha-rmq/deploy/development/definitions/bindings -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/exchanges -name '*.yaml' | xargs yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' | yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' - | kubectl --request-timeout=5s apply -f -;",
+                    "find middleware/ha-rmq/deploy/development/definitions/queues -name '*.yaml' | xargs yq e '.metadata.name = \"${input:DEST_RMQ_NAMESPACE}.\" + .metadata.name' | yq e '.spec.vhost = \"${input:DEST_RMQ_NAMESPACE}\"' - | yq e '.spec.arguments.\"x-max-length\" = 1000' - | kubectl --request-timeout=5s apply -f -;"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && ",
+                    "aws --profile development sso login && ",
+                    "( if exist ${workspaceFolder}\\tmp ( rmdir /s /q ${workspaceFolder}\\tmp\\ ) ) &&",
+                    "( mkdir ${workspaceFolder}\\tmp ) &&",
+                    "( for /f %f in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\"') do ( for /f %g in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\"') do ( for /f %h in ('dir /a-D /S /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\\%g\" ^| findstr /v tmp') do ( yq e \".metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}.\\\" + .metadata.name | .spec.vhost = \\\"${input:DEST_RMQ_NAMESPACE}\\\"\" %h > %h.%f.%g.tmp.yaml ) )  ) ) && ",
+                    "( for /f %f in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\"') do ( for /f %g in ('dir /AD /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\"') do ( for /f %h in ('dir /a-D /S /B \"middleware\\ha-rmq\\deploy\\development\\definitions\\bindings\\%f\\%g\" ^| findstr /v tmp') do ( move %h.%f.%g.tmp.yaml ${workspaceFolder}\\tmp\\ ) )  ) ) && ",
+                    "( kubectl --request-timeout=5s delete -f ${workspaceFolder}\\tmp\\ || echo \"Couldn't do the kubectl delete!\" ) && ",
+                    "( rmdir /s /q ${workspaceFolder}\\tmp\\ ) &&",
+                    "( mkdir ${workspaceFolder}\\tmp ) &&",
+                    "( for /f %f in ( 'dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/exchanges\" ^| findstr /v tmp' ) do ( yq e \".spec.vhost = \\\"${input:DEST_RMQ_NAMESPACE}\\\" | .metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}.\\\" + .metadata.name\" %f > %f.tmp.yaml ) ) && ",
+                    "( for /f %f in ( 'dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/exchanges\" ^| findstr /v tmp' ) do ( move %f.tmp.yaml ${workspaceFolder}\\tmp\\ ) ) && ",
+                    "( kubectl --request-timeout=5s delete -f ${workspaceFolder}\\tmp\\ || echo \"Couldn't do the kubectl delete!\" ) && ",
+                    "( rmdir /s /q ${workspaceFolder}\\tmp\\ ) &&",
+                    "( mkdir ${workspaceFolder}\\tmp ) &&",
+                    "( for /f %f in ('dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/queues\" ^| findstr /v tmp' ) do ( yq e \".metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}.\\\" + .metadata.name | .spec.vhost = \\\"${input:DEST_RMQ_NAMESPACE}\\\" | .spec.arguments.\\\"x-max-length\\\" = 1000\" %f > %f.tmp.yaml ) ) && ",
+                    "( for /f %f in ('dir /a-D /S /B \"middleware/ha-rmq/deploy/development/definitions/queues\" ^| findstr /v tmp' ) do ( move %f.tmp.yaml ${workspaceFolder}\\tmp\\ ) ) && ",
+                    "( kubectl --request-timeout=5s delete -f ${workspaceFolder}\\tmp\\ || echo \"Couldn't do the kubectl delete!\" ) && ",
+                    "( rmdir /s /q ${workspaceFolder}\\tmp\\ ) &&",
+                    "yq e \".spec.name = \\\"${input:DEST_RMQ_NAMESPACE}\\\"\" middleware/ha-rmq/deploy/development/definitions/vhost.yaml | yq e \".metadata.name = \\\"${input:DEST_RMQ_NAMESPACE}\\\"\" - | kubectl --request-timeout=5s delete -f - && ",
+                    "echo \"Done!\""
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[LAMBDA] deploy lambda essentials",
+            "linux": {
+                "command": [
+                    "aws --profile development sso login;",
+                    "aws --profile development iam get-role --role-name nightlife-development-nl-revive-iam-role | jq --arg caller_identity $(aws --profile development sts get-caller-identity | jq -r '.Arn') 'del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\"Effect\":\"Allow\",\"Principal\": {\"AWS\":$caller_identity}, \"Action\": \"sts:AssumeRole\"}] | .Role.AssumeRolePolicyDocument' > trust-policy.json.tmp;",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-revive-iam-role --policy-document file://trust-policy.json.tmp;",
+                    "rm trust-policy.json.tmp;"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "aws --profile development sso login;",
+                    "aws --profile development iam get-role --role-name nightlife-development-nl-revive-iam-role | jq --arg caller_identity $(aws --profile development sts get-caller-identity | jq -r '.Arn') 'del(.Role.AssumeRolePolicyDocument.Statement[] | select(.Principal.AWS == $caller_identity)) | .Role.AssumeRolePolicyDocument.Statement += [{\"Effect\":\"Allow\",\"Principal\": {\"AWS\":$caller_identity}, \"Action\": \"sts:AssumeRole\"}] | .Role.AssumeRolePolicyDocument' > trust-policy.json.tmp;",
+                    "aws --profile development iam update-assume-role-policy --role-name nightlife-development-nl-revive-iam-role --policy-document file://trust-policy.json.tmp;",
+                    "rm trust-policy.json.tmp;"
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[LAMBDA] deploy lambda",
+            "linux": {
+                "command": [
+                    "aws --profile development sso login;",
+                    "cd scripts/${input:LAMBDA_NAME}/src && zip -r ${input:LAMBDA_NAME}.zip .;",
+                    "aws --profile development lambda update-function-code --function-name ${input:LAMBDA_NAME} --zip-file fileb://${input:LAMBDA_NAME}.zip"
+                ]
+            },
+            "osx": {
+                "command": [
+                    "aws --profile development sso login;",
+                    "cd scripts/${input:LAMBDA_NAME}/src && zip -r ${input:LAMBDA_NAME}.zip .;",
+                    "aws --profile development lambda update-function-code --function-name ${input:LAMBDA_NAME} --zip-file fileb://${input:LAMBDA_NAME}.zip"
+                ]
+            },
+            "windows": {
+                "command": [
+                    "aws --profile development sso login && ",
+                    "powershell -command \"Compress-Archive -Force -Path scripts/${input:LAMBDA_NAME}/src/* -DestinationPath scripts/${input:LAMBDA_NAME}/src/${input:LAMBDA_NAME}.zip\" && ",
+                    "aws --profile development lambda update-function-code --function-name ${input:LAMBDA_NAME} --zip-file fileb://scripts/${input:LAMBDA_NAME}/src/${input:LAMBDA_NAME}.zip"
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "[LAMBDA] deploy python lambda",
+            "linux": {
+                "command": [
+                    "aws --profile development sso login;",
+                    "cp scripts/${input:LAMBDA_NAME}/src/index.py scripts/${input:LAMBDA_NAME}/libs/index.py;",
+                    "cd scripts/${input:LAMBDA_NAME}/libs;",
+                    "zip -r ${input:LAMBDA_NAME}.zip .;",
+                    "aws --profile development lambda update-function-code --function-name ${input:LAMBDA_NAME} --zip-file fileb://${input:LAMBDA_NAME}.zip;",
+                    "rm ${input:LAMBDA_NAME}.zip;",
+                    "rm index.py;"
+                ]
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "DEST_DEVELOPER_NAMESPACE",
+            "description": "What kubernetes namespace do you want to deploy to?",
+            "type": "pickString",
+            "options": [
+                "apps-sm",
+                "apps-st",
+                "apps-sn",
+                "apps-bj",
+                "apps-rd",
+                "apps-jb",
+                "apps-fr",
+                "apps-mw",
+                "apps-ld",
+                "apps-bt",
+                "apps-th"
+            ]
+        },
+        {
+            "id": "SRC_DEVELOPER_NAMESPACE",
+            "description": "What kubernetes namespace do you want to pull from?",
+            "type": "pickString",
+            "options": [
+                "default",
+                "apps-sm",
+                "apps-st",
+                "apps-sn",
+                "apps-bj",
+                "apps-rd",
+                "apps-jb",
+                "apps-fr",
+                "apps-mw",
+                "apps-ld",
+                "apps-bt",
+                "apps-th"
+            ]
+        },
+        {
+            "id": "DEST_RMQ_NAMESPACE",
+            "description": "What RMQ vhost do you want to deploy to?",
+            "type": "pickString",
+            "options": [
+                "rmq-sm",
+                "rmq-st",
+                "rmq-sn",
+                "rmq-bj",
+                "rmq-rd",
+                "rmq-jb",
+                "rmq-fr",
+                "rmq-mw",
+                "rmq-ld",
+                "rmq-bt",
+                "rmq-th"
+            ]
+        },
+        {
+            "id": "BACKEND",
+            "description": "What backend do you want to deploy to the cluster?",
+            "type": "pickString",
+            "options": [
+                "nl-hdms",
+                "nl-doors-v1",
+                "nl-swifty",
+                "nl-mgmt",
+                "nl-redshift-write",
+                "nl-da",
+                "nl-markymark",
+                "nl-audio-slave",
+                "nl-rem",
+                "nl-macygrey",
+                "nl-revive-controller",
+                "nl-thumbs-up",
+                "nl-ocd",
+                "nl-ocd-chatterbox",
+                "nl-ocd-lite",
+                "nl-spotify",
+                "nl-all-songs",
+                "nl-nessie",
+                "nl-macygrey",
+                "nl-ratm",
+                "nl-zeppelin",
+                "nl-search"
+            ]
+        },
+        {
+            "id": "RESOURCE_TYPE",
+            "description": "What is the resource type?",
+            "type": "pickString",
+            "options": ["deploy", "svc", "secret"]
+        },
+        {
+            "id": "RESOURCE_NAME",
+            "description": "What is the name of the resource?",
+            "type": "promptString"
+        },
+        {
+            "id": "LAMBDA_NAME",
+            "description": "What is the name of the lambda?",
+            "type": "pickString",
+            "options": [
+                "nl-redshift-ingest",
+                "nl-purge",
+                "nl-dumpster",
+                "nl-revive"
+            ]
+        }
+    ]
+}

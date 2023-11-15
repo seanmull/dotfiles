@@ -99,8 +99,14 @@ lvim.builtin.which_key.mappings["k"] = {
 		"<cmd>!kubectl config use-context arn:aws:eks:ap-southeast-2:174155838907:cluster/nightlife-development-eks-cluster && kubectl delete -f %<CR>",
 		"Dev remove",
 	},
-	pa = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl apply -f %<CR>", "Prod apply" },
-	pd = { "<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl delete -f %<CR>", "Prod remove" }
+	pa = {
+		"<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl apply -f %<CR>",
+		"Prod apply",
+	},
+	pd = {
+		"<cmd>!kubectl use-context arn:aws:eks:ap-southeast-2:164522539201:cluster/nightlife-production-eks-cluster && kubectl delete -f %<CR>",
+		"Prod remove",
+	},
 }
 
 lvim.builtin.which_key.mappings["dh"] = { "<cmd>lua require'dap.ui.widgets'.hover()<cr>", "Hover" }
@@ -263,6 +269,7 @@ linters.setup({
 -- Additional Plugins
 lvim.plugins = {
 	-- {'ojroques/vim-oscyank', branch = 'main'},
+	{ "michaelb/sniprun", run = "sh ./install.sh" },
 	{
 		"EthanJWright/vs-tasks.nvim",
 		dependencies = {
