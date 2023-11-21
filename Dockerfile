@@ -20,6 +20,10 @@ ENV PATH="/root/go/bin:${PATH}"
 
 RUN go install github.com/jesseduffield/lazygit@latest
 
+RUN touch ~/.bashrc && chmod +x ~/.bashrc
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+RUN chmod +x ~/.nvm/nvm.sh
+RUN . ~/.nvm/nvm.sh && source ~/.bashrc && nvm install node 14.21.3
 # TODO try moving into entrypoint script
 # RUN git config --global user.name "sean mull"
 # RUN git config --global user.email "kimlan065@gmail.com"
