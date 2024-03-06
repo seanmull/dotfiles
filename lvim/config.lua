@@ -409,7 +409,12 @@ dap.adapters.typescript = {
 	command = "/usr/bin/node",
 	args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
 }
-require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2", "node" } })
+dap.adapters.javascriptreact = {
+	type = "executable",
+	command = "/usr/bin/node",
+	args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
+}
+require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2", "node", "javascriptreact" } })
 
 -- dap.configurations.javascript = {
 --   {
