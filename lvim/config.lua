@@ -238,7 +238,7 @@ lvim.plugins = {
 -- {'ojroques/vim-oscyank', branch = 'main'},
   { "kristijanhusak/vim-dadbod-ui" },
   { "xolox/vim-misc" },
-  { "sysid/vimwiki-nirvana" },
+  -- { "sysid/vimwiki-nirvana" },
   { "z0mbix/vim-shfmt" },
   { "tpope/vim-dadbod" },
   { "ckipp01/stylua-nvim", run = "cargo install stylua" },
