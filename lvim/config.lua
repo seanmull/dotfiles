@@ -11,7 +11,7 @@ helllo123
 lvim.log.level = "warn"
 lvim.format_on_save = false
 lvim.colorscheme = "lunar"
-lvim.lsp.diagnostics.virtual_text = false
+-- lvim.lsp.diagnostics.virtual_text = false
 vim.opt.tabstop = 2
 vim.opt.timeoutlen = 100
 vim.opt.shiftwidth = 2
@@ -38,16 +38,16 @@ lvim.builtin.telescope = {
 		layout_strategies = "horizontal",
 	},
 }
-require("lspconfig").sumneko_lua.setup({
-	settings = {
-		Lua = {
-			workspace = {
-				-- Make the server aware of Neovim runtime files
-				checkThirdParty = false,
-			},
-		},
-	},
-})
+-- require("lspconfig").sumneko_lua.setup({
+-- 	settings = {
+-- 		Lua = {
+-- 			workspace = {
+-- 				-- Make the server aware of Neovim runtime files
+-- 				checkThirdParty = false,
+-- 			},
+-- 		},
+-- 	},
+-- })
 -- for quickly running scripts use which_key
 -- lvim.builtin.which_key.mappings["x"] = {
 -- name = "+Execute",
@@ -269,7 +269,7 @@ linters.setup({
 -- Additional Plugins
 lvim.plugins = {
 	-- {'ojroques/vim-oscyank', branch = 'main'},
-	{ "michaelb/sniprun", run = "sh ./install.sh" },
+	{ "michaelb/sniprun", build = "sh ./install.sh" },
 	{
 		"EthanJWright/vs-tasks.nvim",
 		dependencies = {
@@ -280,10 +280,10 @@ lvim.plugins = {
 	},
 	{ "kristijanhusak/vim-dadbod-ui" },
 	{ "xolox/vim-misc" },
-	{ "sysid/vimwiki-nirvana" },
+	-- { "sysid/vimwiki-nirvana" },
 	{ "z0mbix/vim-shfmt" },
 	{ "tpope/vim-dadbod" },
-	{ "ckipp01/stylua-nvim", run = "cargo install stylua" },
+	{ "ckipp01/stylua-nvim", build = "cargo install stylua" },
 	{ "takac/vim-hardtime" },
 	{ "tpope/vim-surround" },
 	{
@@ -302,7 +302,7 @@ lvim.plugins = {
 	{ "vimwiki/vimwiki" },
 	{
 		"iamcco/markdown-preview.nvim",
-		run = function()
+		build = function()
 			vim.fn["mkdp#util#install"]()
 		end,
 	},
@@ -328,24 +328,24 @@ lvim.plugins = {
 	-- 		require("distant"):setup()
 	-- 	end,
 	-- },
-	{
-		"Exafunction/codeium.vim",
-		config = function()
-			-- Change '<C-g>' here to any keycode you like.
-			vim.keymap.set("i", "<c-x>", function()
-				return vim.fn["codeium#Accept"]()
-			end, { expr = true })
-			vim.keymap.set("i", "<c-d>", function()
-				return vim.fn["codeium#CycleCompletions"](1)
-			end, { expr = true })
-			vim.keymap.set("i", "<c-f>", function()
-				return vim.fn["codeium#CycleCompletions"](-1)
-			end, { expr = true })
-			-- vim.keymap.set("i", "<c-x>", function()
-			-- 	return vim.fn["codeium#Clear"]()
-			-- end, { expr = true })
-		end,
-	},
+	-- {
+	-- 	"Exafunction/codeium.vim",
+	-- 	config = function()
+	-- 		-- Change '<C-g>' here to any keycode you like.
+	-- 		vim.keymap.set("i", "<c-x>", function()
+	-- 			return vim.fn["codeium#Accept"]()
+	-- 		end, { expr = true })
+	-- 		vim.keymap.set("i", "<c-d>", function()
+	-- 			return vim.fn["codeium#CycleCompletions"](1)
+	-- 		end, { expr = true })
+	-- 		vim.keymap.set("i", "<c-f>", function()
+	-- 			return vim.fn["codeium#CycleCompletions"](-1)
+	-- 		end, { expr = true })
+	-- 		-- vim.keymap.set("i", "<c-x>", function()
+	-- 		-- 	return vim.fn["codeium#Clear"]()
+	-- 		-- end, { expr = true })
+	-- 	end,
+	-- },
 	{ "ThePrimeagen/vim-be-good" },
 }
 
