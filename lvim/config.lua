@@ -11,7 +11,7 @@ an executable
 lvim.log.level = "warn"
 lvim.format_on_save = false
 lvim.colorscheme = "tokyonight"
-lvim.lsp.diagnostics.virtual_text = false
+-- lvim.lsp.diagnostics.virtual_text = false
 vim.opt.tabstop = 4
 vim.opt.timeoutlen = 100
 vim.opt.shiftwidth = 4
@@ -30,16 +30,16 @@ lvim.builtin.telescope = {
     layout_strategies = "horizontal"
   }
 }
-require('lspconfig').sumneko_lua.setup({
-    settings = {
-        Lua = {
-            workspace = {
-                -- Make the server aware of Neovim runtime files
-                checkThirdParty = false,
-            },
-        }
-    }
-})
+-- require('lspconfig').sumneko_lua.setup({
+--     settings = {
+--         Lua = {
+--             workspace = {
+--                 -- Make the server aware of Neovim runtime files
+--                 checkThirdParty = false,
+--             },
+--         }
+--     }
+-- })
 -- for quickly running scripts use which_key
 -- lvim.builtin.which_key.mappings["x"] = {
 -- name = "+Execute",
@@ -237,11 +237,12 @@ linters.setup({
 lvim.plugins = {
 -- {'ojroques/vim-oscyank', branch = 'main'},
   { "kristijanhusak/vim-dadbod-ui" },
+  -- { "mfussenegger/nvim-dap-python" },
   { "xolox/vim-misc" },
   -- { "sysid/vimwiki-nirvana" },
   { "z0mbix/vim-shfmt" },
   { "tpope/vim-dadbod" },
-  { "ckipp01/stylua-nvim", run = "cargo install stylua" },
+  { "ckipp01/stylua-nvim",build = "cargo install stylua" },
   { "takac/vim-hardtime" },
   { "tpope/vim-surround" },
   {
@@ -259,8 +260,7 @@ lvim.plugins = {
   { "nvim-telescope/telescope-media-files.nvim" },
   { "vimwiki/vimwiki" },
   {
-    "iamcco/markdown-preview.nvim",
-    run = function()
+    "iamcco/markdown-preview.nvim", build = function()
       vim.fn["mkdp#util#install"]()
     end,
   },
@@ -301,16 +301,7 @@ lvim.keys.normal_mode["<leader>dD"] = "<cmd>lua require'dap'.down()<cr>"
 
 local dap = require("dap")
 dap.set_log_level("TRACE")
--- dap.adapters.javascript = {
---   type = 'server',
---   host = '127.0.0.1',
---   port = 3000
--- }
--- dap.adapters.node2 = {
---   type = 'executable',
---   command = '/usr/bin/node',
---   args = { os.getenv('HOME') .. '/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js' },
--- }
+
 dap.adapters.node = {
   type = "executable",
   command = "/usr/bin/node",
@@ -326,57 +317,37 @@ dap.adapters.typescript = {
   command = "/usr/bin/node",
   args = { os.getenv("HOME") .. "/dev/microsoft/vscode-node-debug2/out/src/nodeDebug.js" },
 }
-require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2", "node" } })
 
--- dap.configurations.javascript = {
---   {
---     -- name = 'Launch',
---     -- type = 'node2',
---     -- request = 'launch',
---     -- program = '${file}',
---     cwd = vim.fn.getcwd(),
---     sourceMaps = true,
---     protocol = 'inspector',
---     console = 'integratedTerminal',
---   },
---   {
---     -- For this to work you need to make sure the node process is started with the `--inspect` flag.
---     name = 'Attach to process',
---     type = 'node2',
---     request = 'attach',
---     port = 9229
---     -- processId = require 'dap.utils'.pick_process,
---   },
--- }
--- dap.configurations.typescript = {
---   {
---     name = 'Launch',
---     type = 'node2',
---     request = 'launch',
---     program = '${file}',
---     -- outFiles = "[${workspaceRoot}/dist/src/*.js]",
---     cwd = vim.fn.getcwd(),
---     sourceMaps = true,
---     protocol = 'inspector',
---     console = 'integratedTerminal'
---   },
---   {
---     -- For this to work you need to make sure the node process is started with the `--inspect` flag.
---     name = 'Attach to process',
---     type = 'node2',
---     request = 'attach',
---     port = 9229
---     -- processId = require 'dap.utils'.pick_process,
---   },
--- }
--- require("dapui").setup()
--- lvim.keys.normal_mode["<leader>U"] = ":lua require('dapui').toggle()<CR>"
--- Autocommands (https://neovim.io/doc/user/autocmd.html)
--- vim.api.nvim_create_autocmd("BufEnter", {
---   pattern = { "*.json", "*.jsonc" },
---   -- enable wrap mode for json files only
---   command = "setlocal wrap",
--- })
+local dap = require('dap')
+dap.adapters.python = function(cb, config)
+  if config.request == 'attach' then
+    ---@diagnostic disable-next-line: undefined-field
+    local port = (config.connect or config).port
+    ---@diagnostic disable-next-line: undefined-field
+    local host = (config.connect or config).host or '127.0.0.1'
+    cb({
+      type = 'server',
+      port = assert(port, '`connect.port` is required for a python `attach` configuration'),
+      host = host,
+      options = {
+        source_filetype = 'python',
+      },
+    })
+  else
+    cb({
+      type = 'executable',
+      command = os.getenv("HOME") .. "/.virtualenvs/debugpy/bin/python",
+      args = { '-m', 'debugpy.adapter' },
+      options = {
+        source_filetype = 'python',
+      },
+    })
+  end
+end
+
+require("dap.ext.vscode").load_launchjs(nil, { node = { "javascript", "typescript", "node2", "node" } })
+require("dap.ext.vscode").load_launchjs(nil, { python = { "debugpy", "python" } })
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "zsh",
   callback = function()
