@@ -40,6 +40,16 @@ lvim.builtin.telescope = {
 --         }
 --     }
 -- })
+-- in_wsl = os.getenv('WSL_DISTRO_NAME') ~= nil
+
+if in_wsl then
+vim.g.clipboard = {
+name = 'wsl clipboard',
+copy =  { ["+"] = { "clip.exe" },   ["*"] = { "clip.exe" } },
+paste = { ["+"] = { "win32yank.exe -o --lf" }, ["*"] = { "win32yank.exe -o --lf" } },
+cache_enabled = true
+}
+end
 -- for quickly running scripts use which_key
 -- lvim.builtin.which_key.mappings["x"] = {
 -- name = "+Execute",
@@ -336,6 +346,7 @@ dap.adapters.python = function(cb, config)
   else
     cb({
       type = 'executable',
+      -- command = "/usr/bin/python3.10",
       command = os.getenv("HOME") .. "/.virtualenvs/debugpy/bin/python",
       args = { '-m', 'debugpy.adapter' },
       options = {
