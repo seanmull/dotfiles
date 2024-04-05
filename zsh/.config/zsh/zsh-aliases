@@ -12,6 +12,7 @@ alias live="cd $HOME/projects/mono-live"
 alias z="cd $HOME/.config/zsh/"
 alias p="cd $HOME/.local/share/lunarvim/site/pack/packer/start"
 alias d="cd /var/lib/docker/volumes/lunarvim-docker_config/_data"
+alias ut="source $HOME/projects/bash_scripts/login.sh"
 
 # some stuff to allow remote connections from hosts on the network
 alias startxrdp="sudo /etc/init.d/dbus start && sudo /etc/init.d/xrdp start"
